@@ -1,0 +1,192 @@
+.accordion {
+  display: flex;
+  flex-direction: column;
+  width: 80vw;
+  max-width: 700px;
+}
+
+.modalWrapper {
+  padding: 10px;
+}
+
+.modalWrapper ul {
+  list-style: none;
+}
+
+.modalWrapper .eventCardBody {
+  margin-bottom: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.listBtns {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  height: 100%;
+}
+
+.badgeEvent {
+  margin-top: 8px;
+  text-align: left;
+}
+
+.noSessionMessage {
+  text-align: center;
+}
+
+.eventWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  justify-content: center;
+}
+
+.eventHeader {
+  color: white;
+  font-weight: 400;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cardTime {
+  margin: 10px;
+  white-space: nowrap;
+  width: 10%;
+  min-width: 50px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.eventCard {
+  width: 95% !important;
+  height: fit-content;
+}
+
+.eventCardBody {
+  background-color: white;
+  align-items: center !important;
+  justify-content: space-evenly !important;
+  margin: auto !important;
+
+  /* margin: 0 !important; */
+}
+.cardField {
+  font-size: 13px;
+  width: 90%;
+  flex-direction: column;
+}
+
+.cardColumns {
+  display: flex;
+  gap: 10%;
+}
+
+.bold {
+  font-weight: bold;
+  color: hsl(0, 0%, 70%);
+}
+
+.addEvent {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+
+.newEvent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 10px;
+  padding: 10px;
+}
+
+.selectionContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  align-items: left;
+  margin: 10px;
+}
+
+.time {
+  max-width: 120px;
+}
+
+.dropdowns {
+  display: flex;
+  gap: 10px;
+}
+
+.dropdowns .css-b62m3t-container {
+  width: 40%;
+}
+
+.radioNotesContainer {
+  display: flex;
+  gap: 10px;
+}
+
+.radioCard {
+  flex-direction: row !important;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.eventContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.newEventFields {
+  display: flex;
+  flex-direction: row;
+}
+
+.checkBoxCard {
+  flex-direction: row !important;
+  gap: 10px;
+}
+
+.saveContainer {
+  display: flex;
+  gap: 20px;
+  padding: 10px;
+}
+
+.notes {
+  width: 63% !important;
+}
+.notes textarea {
+  min-height: 100px !important;
+}
+.duration {
+  padding: 10px 15px;
+  width: 60%;
+}
+
+.sparringDuration {
+  width: 60% !important;
+  padding: 10px 15px;
+}
+
+.sliderLabel {
+  display: flex;
+  justify-content: space-between;
+}

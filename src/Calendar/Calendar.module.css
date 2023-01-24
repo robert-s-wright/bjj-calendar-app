@@ -1,0 +1,276 @@
+.wrapper {
+  background-color: hsl(34, 10%, 91%);
+  box-shadow: 1px 1px 1px gray;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.legend {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.weekdayHeading {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin: 10px 0px 0px 0px;
+  padding: 0px 10px 0px 10px;
+  width: 100%;
+  column-gap: 1px;
+}
+
+.monthView {
+  display: grid;
+  gap: 1px;
+  padding: 10px;
+  grid-template-columns: repeat(7, 13vw);
+  grid-template-rows: repeat(5, 130px);
+}
+
+.weekView {
+  display: grid;
+  gap: 1px;
+  padding: 10px;
+  grid-template-columns: repeat(7, 13vw);
+  grid-template-rows: repeat(1, 650px);
+}
+
+.activeBtn {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0 !important;
+  overflow-y: hidden;
+}
+
+.inactiveMonth {
+  background-color: transparent !important;
+}
+
+.changeMonth,
+.changeWeek {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+}
+
+.modalWrapper {
+  padding: 10px;
+}
+
+.modalWrapper ul {
+  list-style: none;
+}
+
+.modalWrapper li {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.listBtns {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dayHeader {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.badgeEvent {
+  margin-top: 8px;
+  width: 100%;
+  padding: 2px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8em;
+
+  background-color: aliceblue;
+}
+
+.smallView {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.smallViewTime {
+  font-weight: bold;
+  text-align: center;
+  color: black;
+  background-color: white;
+  border-radius: 5px;
+  margin: 5px;
+}
+
+.addEvent {
+  display: flex;
+  justify-content: center;
+}
+
+.newEvent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dropdownContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: left;
+  margin: 10px;
+}
+
+.headerButtons {
+  display: flex;
+  height: 70%;
+  gap: 5px;
+}
+
+.toggleView {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+}
+
+.viewSlider {
+  width: 40px;
+  height: 20px;
+  background-color: #144659;
+  border-radius: 50vh;
+  display: flex;
+  align-items: center;
+  transition: all 1s ease-in-out;
+}
+
+.sliderButton {
+  margin: 1.5px;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background-color: white;
+  transition: all 0.5s ease;
+}
+
+.sliderButton:hover {
+  cursor: pointer;
+  box-shadow: 0px 0px 5px white;
+}
+
+.left {
+  justify-content: flex-start;
+  transition: all 1s ease;
+}
+
+.right {
+  transform: translateX(20px);
+  transition: transform 1s ease;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 5px 10px;
+}
+
+/* .title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.legend {
+  position: absolute;
+  left: 25%;
+  transform: translateX(-50%);
+} */
+
+.clubSelector {
+  text-align: left;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.preferences:hover {
+  cursor: pointer;
+}
+
+.userInfo {
+  text-align: left;
+
+  left: 5px;
+}
+
+.toggle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.eventsBadgeMonth {
+  width: 100%;
+
+  font-size: 0.7rem;
+  text-align: left;
+}
+
+.eventsBadgeWeek {
+  width: 100%;
+
+  /* font-size: 0.7rem; */
+  text-align: left;
+}
+
+.smallEvent {
+  padding: 0px 2px 0px 2px;
+  overflow: hidden;
+}
+
+.smallEvent:hover {
+  cursor: pointer;
+}
+
+.eventCardBody {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.cardTime {
+  margin: 10px;
+}
+
+.cardField {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+}
+
+.cardFieldColumns {
+  display: flex;
+  flex-direction: row;
+  gap: 10%;
+  width: 100%;
+  text-align: left;
+}

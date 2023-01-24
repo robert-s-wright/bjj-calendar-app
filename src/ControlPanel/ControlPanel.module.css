@@ -1,0 +1,82 @@
+.modalContainer {
+  width: 90vw;
+  min-width: 300px;
+  max-width: 1300px;
+  padding: 20px;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.modalContainer td,
+.modalContainer th {
+  text-align: center;
+  vertical-align: middle;
+  transition: 0.5s all ease;
+  padding: 5px !important;
+  white-space: nowrap;
+}
+
+.wrapper {
+  display: grid;
+  grid-template-columns: 1.3fr 2fr;
+  width: 95%;
+  gap: 10px;
+  margin: auto;
+}
+
+.modalContainer Table {
+  font-size: calc(0.3rem + 0.7vw);
+}
+
+.sideBar {
+  align-items: center;
+}
+
+.clubCard {
+  padding: 10px;
+  align-items: center;
+}
+
+.clubContainer {
+  width: 95%;
+}
+
+.clubContainer Form {
+  width: 100%;
+}
+/* .header {
+  text-align: center;
+} */
+
+.accordion Button {
+  font-size: calc(0.5rem + 0.7vw) !important;
+  padding: 5px;
+  margin: 5px 0px;
+}
+
+.updated {
+  background-color: hsl(120, 100%, 90%) !important;
+}
+
+.checkBox input {
+  transition: 0.3s all ease;
+}
+
+.checkBox input:hover {
+  cursor: pointer;
+}
+
+.buttons {
+  width: 95%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media only screen and (max-width: 900px) {
+  .wrapper {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+}

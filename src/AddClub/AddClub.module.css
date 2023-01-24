@@ -1,0 +1,14 @@
+.card {
+  width: 80%;
+  max-width: 600px;
+}
+
+.select {
+  text-align: left;
+}
+
+.buttonContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
