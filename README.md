@@ -13,7 +13,6 @@ Created December 2022 to assist BJJ clubs track their training sessions. Created
 - React hooks including useEffect, useState, useRef
 
 * MUI components, including date picker
-*
 
 ## Resources
 
