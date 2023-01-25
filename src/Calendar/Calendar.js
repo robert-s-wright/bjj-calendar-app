@@ -89,7 +89,6 @@ function Calendar(props) {
   };
 
   useEffect(() => {
-    console.log(currentUser);
     setCurrentClub(
       clubList.find((club) => club.value === currentUser.defaultClub)
     );

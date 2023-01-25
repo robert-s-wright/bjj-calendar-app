@@ -15,6 +15,8 @@ import Select from "react-select";
 
 import { registerUser, getClubs } from "../requests/requests";
 
+import { kidBelts, adultBelts, age } from "./../utils";
+
 import styles from "./Registration.module.css";
 
 function Registration(props) {
@@ -29,7 +31,8 @@ function Registration(props) {
     clubId: [],
     belt: "",
     receivedDate: "",
-    needWriteAccess: false,
+    needWriteAccess: [],
+    defaultClub: "",
   };
 
   const [user, setUser] = useState(emptyUser);
@@ -52,39 +55,47 @@ function Registration(props) {
     belt: true,
     receivedDate: true,
     needWriteAccess: true,
+    defaultClub: true,
   });
 
-  const kidBelts = [
-    "White",
-    "Gray & White",
-    "Gray",
-    "Gray & Black",
-    "Yellow & White",
-    "Yellow",
-    "Yellow & Black",
-    "Orange & White",
-    "Orange",
-    "Orange & Black",
-    "Green & White",
-    "Green",
-    "Green & Black",
-  ];
+  // const kidBelts = [
+  //   "White",
+  //   "Gray & White",
+  //   "Gray",
+  //   "Gray & Black",
+  //   "Yellow & White",
+  //   "Yellow",
+  //   "Yellow & Black",
+  //   "Orange & White",
+  //   "Orange",
+  //   "Orange & Black",
+  //   "Green & White",
+  //   "Green",
+  //   "Green & Black",
+  // ];
 
-  const adultBelts = [
-    "White",
-    "Blue",
-    "Purple",
-    "Brown",
-    "Black",
-    "Red & Black",
-    "Red & White",
-    "Red",
-  ];
+  // const adultBelts = [
+  //   "White",
+  //   "Blue",
+  //   "Purple",
+  //   "Brown",
+  //   "Black",
+  //   "Red & Black",
+  //   "Red & White",
+  //   "Red",
+  // ];
 
-  const age =
-    user.birthday !== ""
-      ? Math.floor((new Date() - new Date(user.birthday)) / 31557600000)
-      : null;
+  useEffect(() => {
+    // console.log(user);
+    // console.log(
+    //   clubList.filter((item) => user.needWriteAccess.includes(item.value))
+    // );
+  }, [user]);
+
+  // const age =
+  //   user.birthday !== ""
+  //     ? Math.floor((new Date() - new Date(user.birthday)) / 31557600000)
+  // : null;
 
   const handleRegister = async (e) => {
     setAttemptedSubmit(true);
@@ -278,6 +289,10 @@ function Registration(props) {
               setUser((state) => ({
                 ...state,
                 clubId: e.map((item) => item.value),
+                needWriteAccess: state.needWriteAccess.filter((club) => {
+                  const clubIds = e.map((club) => club.value);
+                  return clubIds.includes(club);
+                }),
               }));
 
               setFormErrors((state) => ({
@@ -288,7 +303,36 @@ function Registration(props) {
             options={clubList}
           />
           <Form.Control.Feedback type="invalid">
-            Please enter your last name
+            Please select clubs you are affiliated with
+          </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group>
+          <Typeahead
+            {...user.defaultClub}
+            id="defaultClubSelection"
+            placeholder="Select your primary club"
+            className={`mb-3 ${styles.select}`}
+            required
+            isValid={!formErrors.defaultClub}
+            isInvalid={attemptedSubmit && formErrors.defaultClub}
+            onChange={(e) => {
+              setUser((state) => ({
+                ...state,
+                defaultClub: e.length === 0 ? "" : e[0].value,
+              }));
+
+              setFormErrors((state) => ({
+                ...state,
+                defaultClub: e.length > 0 ? false : true,
+              }));
+            }}
+            options={clubList.filter((item) =>
+              user.clubId.includes(item.value)
+            )}
+          />
+          <Form.Control.Feedback type="invalid">
+            Please select clubs you are affiliated with
           </Form.Control.Feedback>
         </Form.Group>
 
@@ -301,9 +345,9 @@ function Registration(props) {
             isInvalid={attemptedSubmit && formErrors.belt}
             value={user.belt.length > 0 ? { label: user.belt } : ""}
             options={
-              age !== null && age > 15
+              age(user) !== null && age(user) > 15
                 ? adultBelts.map((belt) => ({ value: belt, label: belt }))
-                : age !== null && age < 15
+                : age(user) !== null && age(user) < 15
                 ? kidBelts.map((belt) => ({ value: belt, label: belt }))
                 : []
             }
@@ -320,7 +364,7 @@ function Registration(props) {
             }}
           ></Typeahead>
           <Form.Control.Feedback type="invalid">
-            Please enter a valid age
+            Please select a belt
           </Form.Control.Feedback>
         </Form.Group>
 
@@ -352,7 +396,7 @@ function Registration(props) {
           </Form.Control.Feedback>
         </FloatingLabel>
 
-        <Form.Check
+        {/* <Form.Check
           className={`${styles.select} mb-3`}
           type="checkbox"
           name="role"
@@ -364,7 +408,38 @@ function Registration(props) {
               needWriteAccess: e.target.checked,
             }))
           }
-        ></Form.Check>
+        ></Form.Check> */}
+        <Form.Group>
+          <Typeahead
+            multiple
+            id="writeAccess"
+            placeholder="Clubs that require access to edit the calendar"
+            className={`mb-3 ${styles.select}`}
+            isValid={!formErrors.needWriteAccess}
+            isInvalid={attemptedSubmit && formErrors.needWriteAccess}
+            selected={clubList.filter((item) =>
+              user.needWriteAccess.includes(item.value)
+            )}
+            options={clubList.filter((club) =>
+              user.clubId.includes(club.value)
+            )}
+            onChange={(e) => {
+              setUser((state) => ({
+                ...state,
+                needWriteAccess: e.map((item) => item.value),
+              }));
+
+              setFormErrors((state) => ({
+                ...state,
+                needWriteAccess:
+                  e.length > 0 ? (e.length > 0 ? false : true) : true,
+              }));
+            }}
+          ></Typeahead>
+          <Form.Control.Feedback type="invalid">
+            Please enter a valid age
+          </Form.Control.Feedback>
+        </Form.Group>
 
         <Button
           className="m-2"

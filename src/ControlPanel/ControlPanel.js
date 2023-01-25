@@ -2,6 +2,7 @@ import React from "react";
 
 import {
   updateUserPermissions,
+  rejectPermissions,
   fetchAllUsers,
   updateUserClubs,
 } from "../requests/requests";
@@ -16,10 +17,19 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Accordion from "react-bootstrap/Accordion";
 import Badge from "react-bootstrap/Badge";
+import FloatingLabel from "react-bootstrap/esm/FloatingLabel";
+
+import { PencilSquare } from "react-bootstrap-icons";
+
+import { TextField, Autocomplete } from "@mui/material";
 
 import { Typeahead } from "react-bootstrap-typeahead";
 
-import Select from "react-select";
+import { DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+
+import { kidBelts, adultBelts, age } from "./../utils";
 
 import styles from "./ControlPanel.module.css";
 
@@ -30,17 +40,35 @@ function ControlPanel({ props }) {
   const [allUsers, setAllUsers] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
   const [usersNotShown, setUsersNotShown] = useState([]);
-
-  // useEffect(() => {
-  //   console.log(usersNotShown);
-  // }, [usersNotShown]);
+  const [newUserPrefs, setNewUserPrefs] = useState({ ...currentUser });
+  const [editingPrefs, setEditingPrefs] = useState(true);
+  const [validated, setValidated] = useState(false);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [formErrors, setFormErrors] = useState({
+    firstName: true,
+    lastName: true,
+    email: true,
+    password: true,
+    birthday: true,
+    clubId: true,
+    belt: true,
+    receivedDate: true,
+    needWriteAccess: true,
+    defaultClub: true,
+  });
 
   useEffect(() => {
     fetchAllUsers().then((result) => {
       setAllUsers(result.data);
       setUserPermissions(result.data.map((item) => ({ ...item, updates: [] })));
     });
+    setNewUserPrefs(currentUser);
   }, []);
+
+  useEffect(() => {
+    // console.log(newUserPrefs);
+    // console.log(clubList);
+  }, [newUserPrefs]);
 
   useEffect(() => {
     setUsersNotShown(() => {
@@ -92,6 +120,31 @@ function ControlPanel({ props }) {
     );
   };
 
+  const handleReject = async (user, club) => {
+    setUserPermissions((state) => {
+      return state.map((item) => {
+        if (item._id === user._id) {
+          return {
+            ...item,
+            needWriteAccess: [...item.needWriteAccess].filter(
+              (value) => value !== club.value
+            ),
+          };
+        } else {
+          return item;
+        }
+      });
+    });
+
+    const result = await rejectPermissions(user, club);
+
+    // console.log(result);
+  };
+
+  // useEffect(() => {
+  //   console.log(userPermissions);
+  // }, userPermissions);
+
   const handleReset = () => {
     setUserPermissions(allUsers.map((item) => ({ ...item, updates: [] })));
   };
@@ -129,57 +182,399 @@ function ControlPanel({ props }) {
               <h4>Welcome {currentUser.firstName}</h4>
             </div>
             <div className={styles.header}>
-              <h6>Preferences</h6>
+              <h6>
+                Preferences{" "}
+                {editingPrefs ? (
+                  <>
+                    <Button
+                      variant="success"
+                      onClick={() => setEditingPrefs(false)}
+                      className={styles.editPrefsButton}
+                      size="sm"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => setEditingPrefs(false)}
+                      className={styles.editPrefsButton}
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <PencilSquare
+                    onClick={() => setEditingPrefs(true)}
+                    className={styles.editPrefs}
+                  />
+                )}
+              </h6>
             </div>
-            <Table
-              striped
-              bordered
-            >
-              <tbody>
-                <tr>
-                  <th>First Name</th>
-                  <td>{currentUser.firstName}</td>
-                </tr>
-                <tr>
-                  <th>Last Name</th>
-                  <td>{currentUser.lastName}</td>
-                </tr>
-                <tr>
-                  <th>Primary Club</th>
-                  <td>
-                    {
-                      clubList.find(
-                        (club) => club.value === currentUser.defaultClub
-                      ).label
-                    }
-                  </td>
-                </tr>
-                <tr>
-                  <th>Club Affiliations</th>
-                  <td>
-                    {currentUser.clubId.map((id) => (
-                      <div key={id}>
-                        {clubList.find((club) => club.value === id).label}
-                      </div>
-                    ))}
-                  </td>
-                </tr>
-                <tr>
-                  <th>E-Mail</th>
-                  <td>{currentUser.email}</td>
-                </tr>
-                <tr>
-                  <th>Birthday</th>
-                  <td>{currentUser.birthday}</td>
-                </tr>
-                <tr>
-                  <th>Belt/Date</th>
-                  <td>
-                    {currentUser.belt} / {currentUser.receivedDate}
-                  </td>
-                </tr>
-              </tbody>
-            </Table>
+            {editingPrefs ? (
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <Form
+                  noValidate
+                  validated={validated}
+                  // onSubmit={handleRegister}
+                  className={styles.form}
+                >
+                  <Table
+                    striped
+                    bordered
+                  >
+                    <tbody>
+                      <tr>
+                        <th>First Name</th>
+                        <td>
+                          <TextField
+                            className={styles.input}
+                            error={attemptedSubmit && formErrors.firstName}
+                            placeholder="First Name"
+                            value={newUserPrefs.firstName}
+                            onChange={(e) => {
+                              setNewUserPrefs((state) => ({
+                                ...state,
+                                firstName: e.target.value,
+                              }));
+                              setFormErrors((state) => ({
+                                ...state,
+                                firstName:
+                                  e.target.value.length > 0 ? false : true,
+                              }));
+                            }}
+                            helperText={
+                              attemptedSubmit && formErrors.firstName
+                                ? "Please enter your first name"
+                                : false
+                            }
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>Last Name</th>
+                        <td>
+                          <TextField
+                            className={styles.input}
+                            placeholder="Last Name"
+                            error={attemptedSubmit && formErrors.lastName}
+                            helperText={
+                              attemptedSubmit && formErrors.lastName
+                                ? "Please enter your last name"
+                                : false
+                            }
+                            required
+                            value={newUserPrefs.lastName}
+                            onChange={(e) => {
+                              setNewUserPrefs((state) => ({
+                                ...state,
+                                lastName: e.target.value,
+                              }));
+                              setFormErrors((state) => ({
+                                ...state,
+                                lastName:
+                                  e.target.value.length > 0 ? false : true,
+                              }));
+                            }}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>E-Mail</th>
+                        <td>
+                          <TextField
+                            className={styles.input}
+                            placeholder="E-Mail"
+                            error={attemptedSubmit && formErrors.email}
+                            helperText={
+                              attemptedSubmit && formErrors.email
+                                ? "Please enter a valid e-mail"
+                                : false
+                            }
+                            value={newUserPrefs.email}
+                            onChange={(e) => {
+                              setNewUserPrefs((state) => ({
+                                ...state,
+                                email: e.target.value,
+                              }));
+                              setFormErrors((state) => ({
+                                ...state,
+                                email: e.target.value.match(
+                                  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+                                )
+                                  ? false
+                                  : true,
+                              }));
+                            }}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>Club Affiliations</th>
+                        <td>
+                          <Autocomplete
+                            className={styles.input}
+                            multiple
+                            id="clubSelection"
+                            placeholder="Select clubs you are affiliated with"
+                            options={clubList}
+                            value={clubList.filter((club) =>
+                              newUserPrefs.clubId.includes(club.value)
+                            )}
+                            onChange={(e, newValue) => {
+                              console.log(e, newValue);
+                              setNewUserPrefs((state) => ({
+                                ...state,
+                                clubId: newValue.map((club) => club.value),
+                              }));
+                              setFormErrors((state) => ({
+                                ...state,
+                                clubId: newValue.length > 0 ? false : true,
+                              }));
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                helperText={
+                                  attemptedSubmit && formErrors.clubId
+                                    ? "Please select at least 1 club affiliation"
+                                    : false
+                                }
+                                error={attemptedSubmit && formErrors.clubId}
+                                {...params}
+                              />
+                            )}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>Primary Club</th>
+                        <td>
+                          <Autocomplete
+                            className={styles.input}
+                            id="primary-club"
+                            placeholder="Select your primary club"
+                            error={attemptedSubmit && formErrors.defaultClub}
+                            options={clubList.filter((club) =>
+                              newUserPrefs.clubId.includes(club.value)
+                            )}
+                            value={
+                              newUserPrefs.defaultClub === ""
+                                ? ""
+                                : clubList.find(
+                                    (club) =>
+                                      club.value === newUserPrefs.defaultClub
+                                  ).label
+                            }
+                            onChange={(e, newValue) => {
+                              console.log(newValue);
+                              setNewUserPrefs((state) => ({
+                                ...state,
+                                defaultClub:
+                                  newValue !== null ? newValue.value : "",
+                              }));
+                              setFormErrors((state) => ({
+                                ...state,
+                                defaultClub: newValue !== null ? false : true,
+                              }));
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                helperText={
+                                  attemptedSubmit && formErrors.clubId
+                                    ? "Please select a primary club"
+                                    : false
+                                }
+                                error={
+                                  attemptedSubmit && formErrors.defaultClub
+                                }
+                                {...params}
+                              />
+                            )}
+                          />
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <th>Birthday</th>
+                        <td>
+                          <DatePicker
+                            className={styles.date}
+                            inputFormat="DD/MM/YYYY"
+                            placeholder="Select Your Birthday"
+                            value={newUserPrefs.birthday}
+                            disableFuture
+                            onError={(error) =>
+                              setFormErrors((state) => ({
+                                ...state,
+                                birthday: error !== null ? true : false,
+                              }))
+                            }
+                            onChange={(e) => {
+                              setNewUserPrefs((state) => ({
+                                ...state,
+                                birthday: e,
+                              }));
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                error={attemptedSubmit && formErrors.birthday}
+                                {...params}
+                                helperText={
+                                  attemptedSubmit && formErrors.birthday
+                                    ? "You may not select a future date"
+                                    : false
+                                }
+                              />
+                            )}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>Belt/Date</th>
+                        <td>
+                          <Autocomplete
+                            id="beltSelection"
+                            placeholder="Select your belt"
+                            className={styles.input}
+                            value={
+                              newUserPrefs.belt.length > 0
+                                ? { label: newUserPrefs.belt }
+                                : ""
+                            }
+                            options={
+                              age(newUserPrefs) !== null &&
+                              age(newUserPrefs) > 15
+                                ? adultBelts.map((belt) => ({
+                                    value: belt,
+                                    label: belt,
+                                  }))
+                                : age(newUserPrefs) !== null &&
+                                  age(newUserPrefs) < 15
+                                ? kidBelts.map((belt) => ({
+                                    value: belt,
+                                    label: belt,
+                                  }))
+                                : []
+                            }
+                            onChange={(e) => {
+                              setNewUserPrefs((state) => ({
+                                ...state,
+                                belt: e.length > 0 ? e[0].value : "",
+                              }));
+
+                              setFormErrors((state) => ({
+                                ...state,
+                                belt:
+                                  e.length > 0
+                                    ? e[0].value.length > 0
+                                      ? false
+                                      : true
+                                    : true,
+                              }));
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                error={attemptedSubmit && formErrors.belt}
+                                {...params}
+                                helperText={
+                                  attemptedSubmit && formErrors.belt
+                                    ? "Please select a belt"
+                                    : false
+                                }
+                              />
+                            )}
+                          />
+
+                          <DatePicker
+                            className={styles.date}
+                            placeholder="Select Your Birthday"
+                            inputFormat="DD/MM/YYYY"
+                            value={newUserPrefs.receivedDate}
+                            disableFuture
+                            onError={(error) =>
+                              setFormErrors((state) => ({
+                                ...state,
+                                receivedDate: error !== null ? true : false,
+                              }))
+                            }
+                            onChange={(e) => {
+                              setNewUserPrefs((state) => ({
+                                ...state,
+                                receivedDate: e,
+                              }));
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                error={
+                                  attemptedSubmit && formErrors.receivedDate
+                                }
+                                helperText={
+                                  attemptedSubmit && formErrors.receivedDate
+                                    ? "You may not select a future date"
+                                    : false
+                                }
+                                {...params}
+                              />
+                            )}
+                          />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </Table>
+                </Form>
+              </LocalizationProvider>
+            ) : (
+              <Table
+                striped
+                bordered
+              >
+                <tbody>
+                  <tr>
+                    <th>First Name</th>
+                    <td>{currentUser.firstName}</td>
+                  </tr>
+                  <tr>
+                    <th>Last Name</th>
+                    <td>{currentUser.lastName}</td>
+                  </tr>
+                  <tr>
+                    <th>Primary Club</th>
+                    <td>
+                      {
+                        clubList.find(
+                          (club) => club.value === currentUser.defaultClub
+                        ).label
+                      }
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Club Affiliations</th>
+                    <td>
+                      {currentUser.clubId.map((id) => (
+                        <div key={id}>
+                          {clubList.find((club) => club.value === id).label}
+                        </div>
+                      ))}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>E-Mail</th>
+                    <td>{currentUser.email}</td>
+                  </tr>
+                  <tr>
+                    <th>Birthday</th>
+                    <td>{currentUser.birthday}</td>
+                  </tr>
+                  <tr>
+                    <th>Belt/Date</th>
+                    <td>
+                      {currentUser.belt} / {currentUser.receivedDate}
+                    </td>
+                  </tr>
+                </tbody>
+              </Table>
+            )}
+
             <div className={styles.header}>
               <h6>Roles/Access</h6>
             </div>
@@ -243,13 +638,22 @@ function ControlPanel({ props }) {
                                 className={styles.accessRequest}
                               >
                                 {
-                                  allUsers.filter(
-                                    (user) =>
-                                      user.needWriteAccess &&
-                                      user.clubId.includes(club.value)
+                                  allUsers.filter((user) =>
+                                    user.needWriteAccess.includes(club.value)
                                   ).length
                                 }{" "}
-                                users are requesting access
+                                user
+                                {(allUsers.filter((user) =>
+                                  user.needWriteAccess.includes(club.value)
+                                ).length >
+                                  1) |
+                                (allUsers.filter((user) =>
+                                  user.needWriteAccess.includes(club.value)
+                                ).length ===
+                                  0)
+                                  ? "s are "
+                                  : " is "}
+                                requesting access
                               </Badge>
                             </div>
                           </Accordion.Header>
@@ -265,8 +669,9 @@ function ControlPanel({ props }) {
                                     <th>Name</th>
                                     <th>Rank</th>
                                     <th>Coach</th>
-                                    <th>Calendar Editing</th>
-                                    <th>Admin Rights</th>
+                                    <th>Calendar Edits</th>
+                                    <th>Admin</th>
+                                    <th>Access Request</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -323,7 +728,7 @@ function ControlPanel({ props }) {
                                                         checked={user[
                                                           field
                                                         ].includes(club.value)}
-                                                        onChange={(e) =>
+                                                        onChange={(e) => {
                                                           handleUpdate(
                                                             e.currentTarget.closest(
                                                               "tr"
@@ -339,8 +744,12 @@ function ControlPanel({ props }) {
                                                                 "permission"
                                                               ),
                                                             "remove"
-                                                          )
-                                                        }
+                                                          );
+                                                          handleReject(
+                                                            user,
+                                                            club
+                                                          );
+                                                        }}
                                                       ></Form.Check>
                                                     </>
                                                   }
@@ -364,6 +773,25 @@ function ControlPanel({ props }) {
                                                 </td>
                                                 <td>{user.belt}</td>
                                                 {userFields}
+                                                <td>
+                                                  {user.needWriteAccess.includes(
+                                                    club.value
+                                                  ) ? (
+                                                    <Button
+                                                      size="sm"
+                                                      variant="danger"
+                                                      className={styles.reject}
+                                                      onClick={() => {
+                                                        handleReject(
+                                                          user,
+                                                          club
+                                                        );
+                                                      }}
+                                                    >
+                                                      Reject
+                                                    </Button>
+                                                  ) : null}
+                                                </td>
                                               </tr>
                                             );
                                           }
