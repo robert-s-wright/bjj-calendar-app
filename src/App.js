@@ -25,7 +25,7 @@ function App() {
     if (result.data.success === true) {
       setLoggedIn(true);
       setLoading(false);
-      setCurrentUser(result.data);
+      setCurrentUser((({ success, iat, ...object }) => object)(result.data));
     } else {
       setLoggedIn(false);
       setLoading(false);

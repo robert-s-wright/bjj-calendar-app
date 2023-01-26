@@ -4,16 +4,15 @@ import { useEffect, useState } from "react";
 
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
-import FloatingLabel from "react-bootstrap/FloatingLabel";
-import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
-import InputGroup from "react-bootstrap/InputGroup";
 
-import { Typeahead } from "react-bootstrap-typeahead";
+import { TextField, Autocomplete } from "@mui/material";
 
-import Select from "react-select";
+import { DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
-import { registerUser, getClubs } from "../requests/requests";
+import { registerUser } from "../requests/requests";
 
 import { kidBelts, adultBelts, age } from "./../utils";
 
@@ -23,25 +22,21 @@ function Registration(props) {
   const { setRegistering, clubList } = props;
 
   const emptyUser = {
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    birthday: "",
+    firstName: null,
+    lastName: null,
+    email: null,
+    password: null,
+    birthday: null,
     clubId: [],
-    belt: "",
-    receivedDate: "",
+    belt: null,
+    receivedDate: null,
     needWriteAccess: [],
-    defaultClub: "",
+    defaultClub: null,
   };
 
   const [user, setUser] = useState(emptyUser);
 
-  // const [clubList, setClubList] = useState([]);
-
   const [registerSuccess, setRegisterSuccess] = useState(undefined);
-
-  const [validated, setValidated] = useState(false);
 
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
@@ -54,400 +49,388 @@ function Registration(props) {
     clubId: true,
     belt: true,
     receivedDate: true,
-    needWriteAccess: true,
     defaultClub: true,
   });
 
-  // const kidBelts = [
-  //   "White",
-  //   "Gray & White",
-  //   "Gray",
-  //   "Gray & Black",
-  //   "Yellow & White",
-  //   "Yellow",
-  //   "Yellow & Black",
-  //   "Orange & White",
-  //   "Orange",
-  //   "Orange & Black",
-  //   "Green & White",
-  //   "Green",
-  //   "Green & Black",
-  // ];
-
-  // const adultBelts = [
-  //   "White",
-  //   "Blue",
-  //   "Purple",
-  //   "Brown",
-  //   "Black",
-  //   "Red & Black",
-  //   "Red & White",
-  //   "Red",
-  // ];
-
-  useEffect(() => {
-    // console.log(user);
-    // console.log(
-    //   clubList.filter((item) => user.needWriteAccess.includes(item.value))
-    // );
-  }, [user]);
-
-  // const age =
-  //   user.birthday !== ""
-  //     ? Math.floor((new Date() - new Date(user.birthday)) / 31557600000)
-  // : null;
-
   const handleRegister = async (e) => {
     setAttemptedSubmit(true);
-    e.preventDefault();
 
-    if (e.target.checkValidity() === false) {
-      e.preventDefault();
-      e.stopPropagation();
+    if (Object.values(formErrors).some((value) => value === true)) {
+      console.log(formErrors);
+      return;
     } else {
       const result = await registerUser(user);
+
       if (result.data) {
         setRegisterSuccess(true);
+        setUser(emptyUser);
       } else {
         setRegisterSuccess(false);
       }
+      setTimeout(() => {
+        setRegisterSuccess(undefined);
+      }, 3000);
     }
   };
 
   return (
     <Card className={`p-3 ${styles.card}`}>
-      <Card className={`p-3 m-3`}>
-        <h3>User Sign Up</h3>
-      </Card>
-      {
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Card className={`p-3 m-3`}>
+          <h3>User Sign Up</h3>
+        </Card>
         {
-          true: (
-            <Alert variant="success">
-              Username registered successfully, upon review, the administrator
-              will grant you access rights.
-            </Alert>
-          ),
-          false: (
-            <Alert variant="warning">
-              This e-mail is already associated with an account, please proceed
-              to the login page.
-            </Alert>
-          ),
-          undefined: null,
-        }[registerSuccess]
-      }
-      <Form
-        noValidate
-        validated={validated}
-        onSubmit={handleRegister}
-      >
-        <FloatingLabel
+          {
+            true: (
+              <Alert variant="success">
+                Username registered successfully, upon review, the administrator
+                will grant you access rights.
+              </Alert>
+            ),
+            false: (
+              <Alert variant="warning">
+                This e-mail is already associated with an account, please
+                proceed to the login page.
+              </Alert>
+            ),
+            undefined: null,
+          }[registerSuccess]
+        }
+
+        <TextField
+          error={attemptedSubmit && formErrors.firstName}
+          className={`${styles.input} mb-3`}
+          type="text"
+          id="firstname"
           label="First Name"
-          className="mb-3"
-        >
-          <Form.Control
-            required
-            isValid={!formErrors.firstName}
-            isInvalid={attemptedSubmit && formErrors.firstName}
-            type="text"
-            name="firstName"
-            placeholder="First Name"
-            value={user.firstName}
-            onChange={(e) => {
-              setUser((state) => ({ ...state, firstName: e.target.value }));
-              setFormErrors((state) => ({
-                ...state,
-                firstName: e.target.value.length > 0 ? false : true,
-              }));
-            }}
-          />
-          <Form.Control.Feedback type="invalid">
-            Please enter your first name
-          </Form.Control.Feedback>
-        </FloatingLabel>
-
-        <FloatingLabel
-          label="Last Name"
-          className="mb-3"
-        >
-          <Form.Control
-            type="text"
-            name="lastName"
-            placeholder="Last Name"
-            isValid={!formErrors.lastName}
-            isInvalid={attemptedSubmit && formErrors.lastName}
-            required
-            value={user.lastName}
-            onChange={(e) => {
-              setUser((state) => ({ ...state, lastName: e.target.value }));
-              setFormErrors((state) => ({
-                ...state,
-                lastName: e.target.value.length > 0 ? false : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter your last name
-          </Form.Control.Feedback>
-        </FloatingLabel>
-
-        <FloatingLabel
-          label="E-mail"
-          className="mb-3"
-        >
-          <Form.Control
-            type="email"
-            name="email"
-            placeholder="E-Mail"
-            isValid={!formErrors.email}
-            isInvalid={attemptedSubmit && formErrors.email}
-            required
-            value={user.email}
-            onChange={(e) => {
-              setUser((state) => ({ ...state, email: e.target.value }));
-              setFormErrors((state) => ({
-                ...state,
-                email: e.target.value.match(
-                  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
-                )
-                  ? false
-                  : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter a valid E-Mail
-          </Form.Control.Feedback>
-        </FloatingLabel>
-
-        <FloatingLabel
-          label="Password"
-          className="mb-3"
-        >
-          <Form.Control
-            type="password"
-            name="password"
-            placeholder="Password"
-            isValid={!formErrors.password}
-            isInvalid={attemptedSubmit && formErrors.password}
-            required
-            value={user.password}
-            onChange={(e) => {
-              setUser((state) => ({
-                ...state,
-                password: e.target.value,
-              }));
-              setFormErrors((state) => ({
-                ...state,
-                password: e.target.value.length > 0 ? false : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter a valid password
-          </Form.Control.Feedback>
-        </FloatingLabel>
-
-        <FloatingLabel
-          label="Your birthday"
-          className="mb-3"
-        >
-          <Form.Control
-            type="date"
-            name="date"
-            isValid={!formErrors.birthday}
-            isInvalid={attemptedSubmit && formErrors.birthday}
-            placeholder="Date"
-            required
-            value={user.birthday}
-            onChange={(e) => {
-              setUser((state) => ({
-                ...state,
-                birthday: e.target.value,
-              }));
-              setFormErrors((state) => ({
-                ...state,
-                birthday: e.target.value.length > 0 ? false : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter your birthday
-          </Form.Control.Feedback>
-        </FloatingLabel>
-        <Form.Group>
-          <Typeahead
-            {...user.clubId}
-            multiple
-            id="clubSelection"
-            placeholder="Select clubs you are affiliated with"
-            className={`mb-3 ${styles.select}`}
-            required
-            isValid={!formErrors.clubId}
-            isInvalid={attemptedSubmit && formErrors.clubId}
-            onChange={(e) => {
-              setUser((state) => ({
-                ...state,
-                clubId: e.map((item) => item.value),
-                needWriteAccess: state.needWriteAccess.filter((club) => {
-                  const clubIds = e.map((club) => club.value);
-                  return clubIds.includes(club);
-                }),
-              }));
-
-              setFormErrors((state) => ({
-                ...state,
-                clubId: e.length > 0 ? false : true,
-              }));
-            }}
-            options={clubList}
-          />
-          <Form.Control.Feedback type="invalid">
-            Please select clubs you are affiliated with
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group>
-          <Typeahead
-            {...user.defaultClub}
-            id="defaultClubSelection"
-            placeholder="Select your primary club"
-            className={`mb-3 ${styles.select}`}
-            required
-            isValid={!formErrors.defaultClub}
-            isInvalid={attemptedSubmit && formErrors.defaultClub}
-            onChange={(e) => {
-              setUser((state) => ({
-                ...state,
-                defaultClub: e.length === 0 ? "" : e[0].value,
-              }));
-
-              setFormErrors((state) => ({
-                ...state,
-                defaultClub: e.length > 0 ? false : true,
-              }));
-            }}
-            options={clubList.filter((item) =>
-              user.clubId.includes(item.value)
-            )}
-          />
-          <Form.Control.Feedback type="invalid">
-            Please select clubs you are affiliated with
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group>
-          <Typeahead
-            id="beltSelection"
-            placeholder="Select your belt"
-            className={`mb-3 ${styles.select}`}
-            isValid={!formErrors.belt}
-            isInvalid={attemptedSubmit && formErrors.belt}
-            value={user.belt.length > 0 ? { label: user.belt } : ""}
-            options={
-              age(user) !== null && age(user) > 15
-                ? adultBelts.map((belt) => ({ value: belt, label: belt }))
-                : age(user) !== null && age(user) < 15
-                ? kidBelts.map((belt) => ({ value: belt, label: belt }))
-                : []
-            }
-            onChange={(e) => {
-              e.length > 0
-                ? setUser((state) => ({ ...state, belt: e[0].value }))
-                : setUser((state) => ({ ...state, belt: "" }));
-
-              setFormErrors((state) => ({
-                ...state,
-                belt:
-                  e.length > 0 ? (e[0].value.length > 0 ? false : true) : true,
-              }));
-            }}
-          ></Typeahead>
-          <Form.Control.Feedback type="invalid">
-            Please select a belt
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <FloatingLabel
-          label="Date you received this ranking"
-          className="mb-3"
-        >
-          <Form.Control
-            type="date"
-            name="date"
-            isValid={!formErrors.receivedDate}
-            isInvalid={attemptedSubmit && formErrors.receivedDate}
-            placeholder="Date"
-            required
-            value={user.receivedDate}
-            onChange={(e) => {
-              setUser((state) => ({
-                ...state,
-                receivedDate: e.target.value,
-              }));
-              setFormErrors((state) => ({
-                ...state,
-                receivedDate: e.target.value.length > 0 ? false : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please choose a date
-          </Form.Control.Feedback>
-        </FloatingLabel>
-
-        {/* <Form.Check
-          className={`${styles.select} mb-3`}
-          type="checkbox"
-          name="role"
-          label="I am a coach and need access to edit the calendar"
-          checked={user.needWriteAccess}
-          onChange={(e) =>
+          required={true}
+          value={user.firstName ? user.firstName : ""}
+          onChange={(e) => {
             setUser((state) => ({
               ...state,
-              needWriteAccess: e.target.checked,
+              firstName: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              firstName: e.target.value.length > 0 ? false : true,
+            }));
+          }}
+          helperText={
+            attemptedSubmit && formErrors.firstName
+              ? "Please enter your first name"
+              : false
+          }
+        />
+
+        <TextField
+          className={`${styles.input} mb-3`}
+          // type="text"
+          name="lastname"
+          id="lastname"
+          label="Last Name"
+          error={attemptedSubmit && formErrors.lastName}
+          helperText={
+            attemptedSubmit && formErrors.lastName
+              ? "Please enter your last name"
+              : false
+          }
+          required
+          value={user.lastName ? user.lastName : ""}
+          onChange={(e) => {
+            setUser((state) => ({
+              ...state,
+              lastName: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              lastName: e.target.value.length > 0 ? false : true,
+            }));
+          }}
+        />
+
+        <TextField
+          className={`${styles.input} mb-3`}
+          type="email"
+          name="email"
+          id="email"
+          label="E-Mail"
+          required
+          error={attemptedSubmit && formErrors.email}
+          helperText={
+            attemptedSubmit && formErrors.email
+              ? "Please enter a valid e-mail"
+              : false
+          }
+          value={user.email ? user.email : ""}
+          onChange={(e) => {
+            setUser((state) => ({
+              ...state,
+              email: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              email: e.target.value.match(
+                /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+              )
+                ? false
+                : true,
+            }));
+          }}
+        />
+        <TextField
+          className={`${styles.input} mb-3`}
+          name="password"
+          type="password"
+          id="password"
+          label="Password"
+          required
+          error={attemptedSubmit && formErrors.password}
+          helperText={
+            "Must contain at least 8 characters and contain at least 1 uppercase letter and 1 number"
+          }
+          value={user.password ? user.password : ""}
+          onChange={(e) => {
+            setUser((state) => ({
+              ...state,
+              password: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              password: e.target.value.match(
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\S)[A-Za-z\S]{8,30}$/
+              )
+                ? false
+                : true,
+            }));
+          }}
+        />
+        <DatePicker
+          className={`${styles.input} mb-3`}
+          name="birthday"
+          type="date"
+          id="birthday"
+          label="Your Birthday"
+          inputFormat="YYYY/MM/DD"
+          value={user.birthday}
+          disableFuture
+          onError={(error) => {
+            setFormErrors((state) => ({
+              ...state,
+              birthday: error !== null ? true : false,
+            }));
+          }}
+          onChange={(e) => {
+            setUser((state) => ({
+              ...state,
+              birthday: e,
+            }));
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              error={attemptedSubmit && formErrors.birthday}
+              required
+              helperText={
+                attemptedSubmit && formErrors.birthday
+                  ? "You may not select a future date"
+                  : false
+              }
+            />
+          )}
+        />
+        <Autocomplete
+          className={`${styles.input} mb-3`}
+          multiple
+          id="club-affiliations"
+          options={clubList}
+          value={clubList.filter((club) => user.clubId.includes(club.value))}
+          isOptionEqualToValue={(option, value) =>
+            option.value === value.value || value.value === ""
+          }
+          onChange={(e, newValue) => {
+            setUser((state) => ({
+              ...state,
+              clubId: newValue.map((club) => club.value),
+              defaultClub: newValue.some(
+                (obj) => obj.value === state.defaultClub
+              )
+                ? state.defaultClub
+                : null,
+              needWriteAccess: state.needWriteAccess
+                .map((item) =>
+                  newValue.some((obj) => obj.value === item) ? item : undefined
+                )
+                .filter((item) => item !== undefined),
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              clubId: newValue.length > 0 ? false : true,
+            }));
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              required
+              label="All clubs you are affiliated with"
+              helperText={
+                attemptedSubmit && formErrors.clubId
+                  ? "Please select at least 1 club affiliation"
+                  : false
+              }
+              error={attemptedSubmit && formErrors.clubId}
+            />
+          )}
+        />
+
+        <Autocomplete
+          className={`${styles.input} mb-3`}
+          disabled={user.clubId.length === 0}
+          id="primary-club"
+          options={clubList.filter((club) => user.clubId.includes(club.value))}
+          isOptionEqualToValue={(option, value) =>
+            option.value === value.value || value === null
+          }
+          value={
+            user.defaultClub === null
+              ? null
+              : clubList.find((club) => club.value === user.defaultClub)
+          }
+          onChange={(e, newValue) => {
+            setUser((state) => ({
+              ...state,
+              defaultClub: newValue !== null ? newValue.value : null,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              defaultClub: newValue !== null ? false : true,
+            }));
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              required
+              error={attemptedSubmit && formErrors.defaultClub}
+              label="Your Primary Club"
+              helperText={
+                attemptedSubmit && formErrors.clubId
+                  ? "Please select a primary club"
+                  : false
+              }
+            />
+          )}
+        />
+        <Autocomplete
+          id="belt-selection"
+          className={`${styles.input} mb-3`}
+          value={user.belt}
+          isOptionEqualToValue={(option, value) =>
+            option.value === value || value === ""
+          }
+          options={
+            age(user) !== null && age(user) > 15
+              ? adultBelts.map((belt) => ({
+                  value: belt,
+                  label: belt,
+                }))
+              : age(user) !== null && age(user) < 15
+              ? kidBelts.map((belt) => ({
+                  value: belt,
+                  label: belt,
+                }))
+              : []
+          }
+          onChange={(e, value) => {
+            console.log(e, value);
+            setUser((state) => ({
+              ...state,
+              belt: value.value,
+            }));
+
+            setFormErrors((state) => ({
+              ...state,
+              belt: value === null ? true : false,
+            }));
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              required
+              label="Your Belt Rank"
+              error={attemptedSubmit && formErrors.belt}
+              helperText={
+                attemptedSubmit && formErrors.belt
+                  ? "Please select a belt"
+                  : false
+              }
+            />
+          )}
+        />
+
+        <DatePicker
+          className={`${styles.input} mb-3`}
+          id="belt-received-date"
+          label="Date you received this rank"
+          inputFormat="YYYY/MM/DD"
+          disabled={user.belt === null}
+          value={user.receivedDate}
+          disableFuture
+          onError={(error) =>
+            setFormErrors((state) => ({
+              ...state,
+              receivedDate: error !== null ? true : false,
             }))
           }
-        ></Form.Check> */}
-        <Form.Group>
-          <Typeahead
-            multiple
-            id="writeAccess"
-            placeholder="Clubs that require access to edit the calendar"
-            className={`mb-3 ${styles.select}`}
-            isValid={!formErrors.needWriteAccess}
-            isInvalid={attemptedSubmit && formErrors.needWriteAccess}
-            selected={clubList.filter((item) =>
-              user.needWriteAccess.includes(item.value)
-            )}
-            options={clubList.filter((club) =>
-              user.clubId.includes(club.value)
-            )}
-            onChange={(e) => {
-              setUser((state) => ({
-                ...state,
-                needWriteAccess: e.map((item) => item.value),
-              }));
-
-              setFormErrors((state) => ({
-                ...state,
-                needWriteAccess:
-                  e.length > 0 ? (e.length > 0 ? false : true) : true,
-              }));
-            }}
-          ></Typeahead>
-          <Form.Control.Feedback type="invalid">
-            Please enter a valid age
-          </Form.Control.Feedback>
-        </Form.Group>
+          onChange={(e) => {
+            setUser((state) => ({
+              ...state,
+              receivedDate: e,
+            }));
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              required
+              error={attemptedSubmit && formErrors.receivedDate}
+              helperText={
+                attemptedSubmit && formErrors.receivedDate
+                  ? "You must enter a date but may not select a future date"
+                  : false
+              }
+            />
+          )}
+        />
+        <Autocomplete
+          className={`${styles.input} mb-3`}
+          disabled={user.clubId.length === 0}
+          multiple
+          required
+          id="club-write-access"
+          options={clubList.filter((club) => user.clubId.includes(club.value))}
+          isOptionEqualToValue={(option, value) =>
+            option.value === value.value || value === ""
+          }
+          value={clubList.filter((club) =>
+            user.needWriteAccess.includes(club.value)
+          )}
+          onChange={(e, newValue) => {
+            setUser((state) => ({
+              ...state,
+              needWriteAccess: newValue.map((club) => club.value),
+            }));
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Clubs that you require write access to the calendar"
+            />
+          )}
+        />
 
         <Button
           className="m-2"
-          // onClick={() => {
-          //   handleRegister();
-          //   setUser(emptyUser);
-          // }}
-          type="submit"
+          onClick={() => {
+            handleRegister();
+          }}
         >
           Register
         </Button>
@@ -460,7 +443,7 @@ function Registration(props) {
         >
           Back to Login
         </Button>
-      </Form>
+      </LocalizationProvider>
     </Card>
   );
 }

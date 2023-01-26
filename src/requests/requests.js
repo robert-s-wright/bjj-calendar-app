@@ -165,6 +165,15 @@ const rejectPermissions = async (user, club) => {
   }
 };
 
+const updateUserPrefs = async (user) => {
+  try {
+    const result = await axios.put("http://localhost:5000/userprefs", user);
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const updateUserClubs = async (data) => {
   const userUpdates = data;
   try {
@@ -233,5 +242,6 @@ export {
   getAffiliations,
   updateUserPermissions,
   rejectPermissions,
+  updateUserPrefs,
   updateUserClubs,
 };

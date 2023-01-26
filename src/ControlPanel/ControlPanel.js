@@ -5,6 +5,7 @@ import {
   rejectPermissions,
   fetchAllUsers,
   updateUserClubs,
+  updateUserPrefs,
 } from "../requests/requests";
 
 import { useEffect, useState } from "react";
@@ -17,13 +18,11 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Accordion from "react-bootstrap/Accordion";
 import Badge from "react-bootstrap/Badge";
-import FloatingLabel from "react-bootstrap/esm/FloatingLabel";
+import Alert from "react-bootstrap/Alert";
 
-import { PencilSquare } from "react-bootstrap-icons";
+import { PencilSquare, ArrowCounterclockwise } from "react-bootstrap-icons";
 
-import { TextField, Autocomplete } from "@mui/material";
-
-import { Typeahead } from "react-bootstrap-typeahead";
+import { TextField, Autocomplete, InputAdornment } from "@mui/material";
 
 import { DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -41,8 +40,9 @@ function ControlPanel({ props }) {
   const [userPermissions, setUserPermissions] = useState([]);
   const [usersNotShown, setUsersNotShown] = useState([]);
   const [newUserPrefs, setNewUserPrefs] = useState({ ...currentUser });
-  const [editingPrefs, setEditingPrefs] = useState(true);
-  const [validated, setValidated] = useState(false);
+  const [editingPrefs, setEditingPrefs] = useState(false);
+  const [editingAlert, setEditingAlert] = useState(undefined);
+
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [formErrors, setFormErrors] = useState({
     firstName: true,
@@ -66,11 +66,6 @@ function ControlPanel({ props }) {
   }, []);
 
   useEffect(() => {
-    // console.log(newUserPrefs);
-    // console.log(clubList);
-  }, [newUserPrefs]);
-
-  useEffect(() => {
     setUsersNotShown(() => {
       return allUsers.map((user) => {
         return { ...user, clubId: [] };
@@ -78,7 +73,8 @@ function ControlPanel({ props }) {
     });
   }, [allUsers]);
 
-  const handleUpdate = (userId, clubId, permission) => {
+  //update permissions handler
+  const handleUpdatePermissions = (userId, clubId, permission) => {
     setUserPermissions(
       userPermissions.map((user) => {
         if (user._id === userId) {
@@ -120,7 +116,8 @@ function ControlPanel({ props }) {
     );
   };
 
-  const handleReject = async (user, club) => {
+  //handle rejection of permissions
+  const handleRejectPermissions = async (user, club) => {
     setUserPermissions((state) => {
       return state.map((item) => {
         if (item._id === user._id) {
@@ -137,19 +134,15 @@ function ControlPanel({ props }) {
     });
 
     const result = await rejectPermissions(user, club);
-
-    // console.log(result);
   };
 
-  // useEffect(() => {
-  //   console.log(userPermissions);
-  // }, userPermissions);
-
-  const handleReset = () => {
+  //handle reset of permissions
+  const handleResetPermissions = () => {
     setUserPermissions(allUsers.map((item) => ({ ...item, updates: [] })));
   };
 
-  async function handleSubmit() {
+  //handle submit of new permissions
+  async function handleSubmitNewPermissions() {
     const result = await updateUserPermissions(userPermissions);
 
     if (result.status === 200) {
@@ -164,6 +157,22 @@ function ControlPanel({ props }) {
 
   const handleAddUserToTable = () => {
     updateUserClubs(usersNotShown);
+  };
+
+  //handle updating user preferences
+
+  const handleUpdateUserPreferences = async (newUserPrefs) => {
+    const result = await updateUserPrefs(newUserPrefs);
+
+    if (result.data.acknowledged && result.data.modifiedCount === 1) {
+      setEditingAlert(true);
+    } else {
+      setEditingAlert(false);
+    }
+    setEditingAlert(true);
+    setTimeout(() => {
+      setEditingAlert(undefined);
+    }, 3000);
   };
 
   return (
@@ -182,13 +191,24 @@ function ControlPanel({ props }) {
               <h4>Welcome {currentUser.firstName}</h4>
             </div>
             <div className={styles.header}>
+              {editingAlert === true ? (
+                <Alert variant="success">
+                  Updated preferences successfully
+                </Alert>
+              ) : editingAlert === false ? (
+                <Alert variant="danger">
+                  There was an error updating your preferences, please try again
+                </Alert>
+              ) : null}
               <h6>
                 Preferences{" "}
                 {editingPrefs ? (
                   <>
                     <Button
                       variant="success"
-                      onClick={() => setEditingPrefs(false)}
+                      onClick={() => {
+                        handleUpdateUserPreferences(newUserPrefs);
+                      }}
                       className={styles.editPrefsButton}
                       size="sm"
                     >
@@ -196,7 +216,10 @@ function ControlPanel({ props }) {
                     </Button>
                     <Button
                       variant="danger"
-                      onClick={() => setEditingPrefs(false)}
+                      onClick={() => {
+                        setEditingPrefs(false);
+                        setNewUserPrefs(currentUser);
+                      }}
                       className={styles.editPrefsButton}
                       size="sm"
                     >
@@ -213,315 +236,362 @@ function ControlPanel({ props }) {
             </div>
             {editingPrefs ? (
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Form
-                  noValidate
-                  validated={validated}
-                  // onSubmit={handleRegister}
-                  className={styles.form}
+                <Table
+                  striped
+                  bordered
                 >
-                  <Table
-                    striped
-                    bordered
-                  >
-                    <tbody>
-                      <tr>
-                        <th>First Name</th>
-                        <td>
-                          <TextField
-                            className={styles.input}
-                            error={attemptedSubmit && formErrors.firstName}
-                            placeholder="First Name"
-                            value={newUserPrefs.firstName}
-                            onChange={(e) => {
-                              setNewUserPrefs((state) => ({
-                                ...state,
-                                firstName: e.target.value,
-                              }));
-                              setFormErrors((state) => ({
-                                ...state,
-                                firstName:
-                                  e.target.value.length > 0 ? false : true,
-                              }));
-                            }}
-                            helperText={
-                              attemptedSubmit && formErrors.firstName
-                                ? "Please enter your first name"
-                                : false
-                            }
-                          />
-                        </td>
-                      </tr>
-                      <tr>
-                        <th>Last Name</th>
-                        <td>
-                          <TextField
-                            className={styles.input}
-                            placeholder="Last Name"
-                            error={attemptedSubmit && formErrors.lastName}
-                            helperText={
-                              attemptedSubmit && formErrors.lastName
-                                ? "Please enter your last name"
-                                : false
-                            }
-                            required
-                            value={newUserPrefs.lastName}
-                            onChange={(e) => {
-                              setNewUserPrefs((state) => ({
-                                ...state,
-                                lastName: e.target.value,
-                              }));
-                              setFormErrors((state) => ({
-                                ...state,
-                                lastName:
-                                  e.target.value.length > 0 ? false : true,
-                              }));
-                            }}
-                          />
-                        </td>
-                      </tr>
-                      <tr>
-                        <th>E-Mail</th>
-                        <td>
-                          <TextField
-                            className={styles.input}
-                            placeholder="E-Mail"
-                            error={attemptedSubmit && formErrors.email}
-                            helperText={
-                              attemptedSubmit && formErrors.email
-                                ? "Please enter a valid e-mail"
-                                : false
-                            }
-                            value={newUserPrefs.email}
-                            onChange={(e) => {
-                              setNewUserPrefs((state) => ({
-                                ...state,
-                                email: e.target.value,
-                              }));
-                              setFormErrors((state) => ({
-                                ...state,
-                                email: e.target.value.match(
-                                  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+                  <tbody>
+                    <tr>
+                      <th>First Name</th>
+                      <td>
+                        <TextField
+                          className={`${styles.input} mt-2 mb-1`}
+                          error={attemptedSubmit && formErrors.firstName}
+                          type="text"
+                          name="firstname"
+                          id="firstname"
+                          label="First Name"
+                          required
+                          InputProps={{
+                            endAdornment:
+                              newUserPrefs.firstName ===
+                              currentUser.firstName ? null : (
+                                <InputAdornment>
+                                  <ArrowCounterclockwise
+                                    className={styles.undo}
+                                  />
+                                </InputAdornment>
+                              ),
+                          }}
+                          value={
+                            newUserPrefs.firstName ? newUserPrefs.firstName : ""
+                          }
+                          onChange={(e) => {
+                            setNewUserPrefs((state) => ({
+                              ...state,
+                              firstName: e.target.value,
+                            }));
+                            setFormErrors((state) => ({
+                              ...state,
+                              firstName:
+                                e.target.value.length > 0 ? false : true,
+                            }));
+                          }}
+                          helperText={
+                            attemptedSubmit && formErrors.firstName
+                              ? "Please enter your first name"
+                              : false
+                          }
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Last Name</th>
+                      <td>
+                        <TextField
+                          className={`${styles.input} mt-2 mb-1`}
+                          type="text"
+                          name="lastname"
+                          id="lastname"
+                          label="Last Name"
+                          error={attemptedSubmit && formErrors.lastName}
+                          helperText={
+                            attemptedSubmit && formErrors.lastName
+                              ? "Please enter your last name"
+                              : false
+                          }
+                          required
+                          InputProps={{
+                            endAdornment:
+                              newUserPrefs.lastName ===
+                              currentUser.lastName ? null : (
+                                <InputAdornment>
+                                  <ArrowCounterclockwise
+                                    className={styles.undo}
+                                  />
+                                </InputAdornment>
+                              ),
+                          }}
+                          value={
+                            newUserPrefs.lastName ? newUserPrefs.lastName : ""
+                          }
+                          onChange={(e) => {
+                            setNewUserPrefs((state) => ({
+                              ...state,
+                              lastName: e.target.value,
+                            }));
+                            setFormErrors((state) => ({
+                              ...state,
+                              lastName:
+                                e.target.value.length > 0 ? false : true,
+                            }));
+                          }}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>E-Mail</th>
+                      <td>
+                        <TextField
+                          className={`${styles.input} mt-2 mb-1`}
+                          type="email"
+                          name="email"
+                          id="email"
+                          label="E-Mail"
+                          required
+                          error={attemptedSubmit && formErrors.email}
+                          helperText={
+                            attemptedSubmit && formErrors.email
+                              ? "Please enter a valid e-mail"
+                              : false
+                          }
+                          value={newUserPrefs.email ? newUserPrefs.email : ""}
+                          onChange={(e) => {
+                            setNewUserPrefs((state) => ({
+                              ...state,
+                              email: e.target.value,
+                            }));
+                            setFormErrors((state) => ({
+                              ...state,
+                              email: e.target.value.match(
+                                /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+                              )
+                                ? false
+                                : true,
+                            }));
+                          }}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Birthday</th>
+                      <td>
+                        <DatePicker
+                          className={`${styles.input} mt-2 mb-1`}
+                          name="birthday"
+                          type="date"
+                          id="birthday"
+                          label="Your Birthday"
+                          inputFormat="YYYY/MM/DD"
+                          value={newUserPrefs.birthday}
+                          disableFuture
+                          onError={(error) => {
+                            setFormErrors((state) => ({
+                              ...state,
+                              birthday: error !== null ? true : false,
+                            }));
+                          }}
+                          onChange={(e) => {
+                            setNewUserPrefs((state) => ({
+                              ...state,
+                              birthday: e,
+                            }));
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              error={attemptedSubmit && formErrors.birthday}
+                              required
+                              helperText={
+                                attemptedSubmit && formErrors.birthday
+                                  ? "You may not select a future date"
+                                  : false
+                              }
+                            />
+                          )}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Club Affiliations</th>
+                      <td>
+                        <Autocomplete
+                          className={`${styles.input} mt-2 mb-1`}
+                          multiple
+                          id="club-affiliations"
+                          options={clubList}
+                          value={clubList.filter((club) =>
+                            newUserPrefs.clubId.includes(club.value)
+                          )}
+                          isOptionEqualToValue={(option, value) =>
+                            option.value === value.value || value.value === ""
+                          }
+                          onChange={(e, newValue) => {
+                            setNewUserPrefs((state) => ({
+                              ...state,
+                              clubId: newValue.map((club) => club.value),
+                              defaultClub: newValue.some(
+                                (obj) => obj.value === state.defaultClub
+                              )
+                                ? state.defaultClub
+                                : null,
+                              needWriteAccess: state.needWriteAccess
+                                .map((item) =>
+                                  newValue.some((obj) => obj.value === item)
+                                    ? item
+                                    : undefined
                                 )
-                                  ? false
-                                  : true,
-                              }));
-                            }}
-                          />
-                        </td>
-                      </tr>
-                      <tr>
-                        <th>Club Affiliations</th>
-                        <td>
-                          <Autocomplete
-                            className={styles.input}
-                            multiple
-                            id="clubSelection"
-                            placeholder="Select clubs you are affiliated with"
-                            options={clubList}
-                            value={clubList.filter((club) =>
-                              newUserPrefs.clubId.includes(club.value)
-                            )}
-                            onChange={(e, newValue) => {
-                              console.log(e, newValue);
-                              setNewUserPrefs((state) => ({
-                                ...state,
-                                clubId: newValue.map((club) => club.value),
-                              }));
-                              setFormErrors((state) => ({
-                                ...state,
-                                clubId: newValue.length > 0 ? false : true,
-                              }));
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                helperText={
-                                  attemptedSubmit && formErrors.clubId
-                                    ? "Please select at least 1 club affiliation"
-                                    : false
-                                }
-                                error={attemptedSubmit && formErrors.clubId}
-                                {...params}
-                              />
-                            )}
-                          />
-                        </td>
-                      </tr>
-                      <tr>
-                        <th>Primary Club</th>
-                        <td>
-                          <Autocomplete
-                            className={styles.input}
-                            id="primary-club"
-                            placeholder="Select your primary club"
-                            error={attemptedSubmit && formErrors.defaultClub}
-                            options={clubList.filter((club) =>
-                              newUserPrefs.clubId.includes(club.value)
-                            )}
-                            value={
-                              newUserPrefs.defaultClub === ""
-                                ? ""
-                                : clubList.find(
-                                    (club) =>
-                                      club.value === newUserPrefs.defaultClub
-                                  ).label
-                            }
-                            onChange={(e, newValue) => {
-                              console.log(newValue);
-                              setNewUserPrefs((state) => ({
-                                ...state,
-                                defaultClub:
-                                  newValue !== null ? newValue.value : "",
-                              }));
-                              setFormErrors((state) => ({
-                                ...state,
-                                defaultClub: newValue !== null ? false : true,
-                              }));
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                helperText={
-                                  attemptedSubmit && formErrors.clubId
-                                    ? "Please select a primary club"
-                                    : false
-                                }
-                                error={
-                                  attemptedSubmit && formErrors.defaultClub
-                                }
-                                {...params}
-                              />
-                            )}
-                          />
-                        </td>
-                      </tr>
+                                .filter((item) => item !== undefined),
+                            }));
+                            setFormErrors((state) => ({
+                              ...state,
+                              clubId: newValue.length > 0 ? false : true,
+                            }));
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              required
+                              label="All clubs you are affiliated with"
+                              helperText={
+                                attemptedSubmit && formErrors.clubId
+                                  ? "Please select at least 1 club affiliation"
+                                  : false
+                              }
+                              error={attemptedSubmit && formErrors.clubId}
+                            />
+                          )}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Primary Club</th>
+                      <td>
+                        <Autocomplete
+                          className={`${styles.input} mt-2 mb-1`}
+                          disabled={newUserPrefs.clubId.length === 0}
+                          id="primary-club"
+                          options={clubList.filter((club) =>
+                            newUserPrefs.clubId.includes(club.value)
+                          )}
+                          isOptionEqualToValue={(option, value) =>
+                            option.value === value.value || value === null
+                          }
+                          value={
+                            newUserPrefs.defaultClub === null
+                              ? null
+                              : clubList.find(
+                                  (club) =>
+                                    club.value === newUserPrefs.defaultClub
+                                )
+                          }
+                          onChange={(e, newValue) => {
+                            setNewUserPrefs((state) => ({
+                              ...state,
+                              defaultClub:
+                                newValue !== null ? newValue.value : null,
+                            }));
+                            setFormErrors((state) => ({
+                              ...state,
+                              defaultClub: newValue !== null ? false : true,
+                            }));
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              required
+                              error={attemptedSubmit && formErrors.defaultClub}
+                              label="Your Primary Club"
+                              helperText={
+                                attemptedSubmit && formErrors.clubId
+                                  ? "Please select a primary club"
+                                  : false
+                              }
+                            />
+                          )}
+                        />
+                      </td>
+                    </tr>
 
-                      <tr>
-                        <th>Birthday</th>
-                        <td>
-                          <DatePicker
-                            className={styles.date}
-                            inputFormat="DD/MM/YYYY"
-                            placeholder="Select Your Birthday"
-                            value={newUserPrefs.birthday}
-                            disableFuture
-                            onError={(error) =>
-                              setFormErrors((state) => ({
-                                ...state,
-                                birthday: error !== null ? true : false,
-                              }))
-                            }
-                            onChange={(e) => {
-                              setNewUserPrefs((state) => ({
-                                ...state,
-                                birthday: e,
-                              }));
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                error={attemptedSubmit && formErrors.birthday}
-                                {...params}
-                                helperText={
-                                  attemptedSubmit && formErrors.birthday
-                                    ? "You may not select a future date"
-                                    : false
-                                }
-                              />
-                            )}
-                          />
-                        </td>
-                      </tr>
-                      <tr>
-                        <th>Belt/Date</th>
-                        <td>
-                          <Autocomplete
-                            id="beltSelection"
-                            placeholder="Select your belt"
-                            className={styles.input}
-                            value={
-                              newUserPrefs.belt.length > 0
-                                ? { label: newUserPrefs.belt }
-                                : ""
-                            }
-                            options={
-                              age(newUserPrefs) !== null &&
-                              age(newUserPrefs) > 15
-                                ? adultBelts.map((belt) => ({
-                                    value: belt,
-                                    label: belt,
-                                  }))
-                                : age(newUserPrefs) !== null &&
-                                  age(newUserPrefs) < 15
-                                ? kidBelts.map((belt) => ({
-                                    value: belt,
-                                    label: belt,
-                                  }))
-                                : []
-                            }
-                            onChange={(e) => {
-                              setNewUserPrefs((state) => ({
-                                ...state,
-                                belt: e.length > 0 ? e[0].value : "",
-                              }));
+                    <tr>
+                      <th>Belt/Date</th>
+                      <td>
+                        <Autocomplete
+                          id="belt-selection"
+                          className={`${styles.input} mt-2 mb-1`}
+                          value={newUserPrefs.belt}
+                          isOptionEqualToValue={(option, value) =>
+                            option.value === value || value === ""
+                          }
+                          options={
+                            age(newUserPrefs) !== null && age(newUserPrefs) > 15
+                              ? adultBelts.map((belt) => ({
+                                  value: belt,
+                                  label: belt,
+                                }))
+                              : age(newUserPrefs) !== null &&
+                                age(newUserPrefs) < 15
+                              ? kidBelts.map((belt) => ({
+                                  value: belt,
+                                  label: belt,
+                                }))
+                              : []
+                          }
+                          onChange={(e, value) => {
+                            console.log(e, value);
+                            setNewUserPrefs((state) => ({
+                              ...state,
+                              belt: value.value,
+                            }));
 
-                              setFormErrors((state) => ({
-                                ...state,
-                                belt:
-                                  e.length > 0
-                                    ? e[0].value.length > 0
-                                      ? false
-                                      : true
-                                    : true,
-                              }));
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                error={attemptedSubmit && formErrors.belt}
-                                {...params}
-                                helperText={
-                                  attemptedSubmit && formErrors.belt
-                                    ? "Please select a belt"
-                                    : false
-                                }
-                              />
-                            )}
-                          />
+                            setFormErrors((state) => ({
+                              ...state,
+                              belt: value === null ? true : false,
+                            }));
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              required
+                              label="Your Belt Rank"
+                              error={attemptedSubmit && formErrors.belt}
+                              helperText={
+                                attemptedSubmit && formErrors.belt
+                                  ? "Please select a belt"
+                                  : false
+                              }
+                            />
+                          )}
+                        />
 
-                          <DatePicker
-                            className={styles.date}
-                            placeholder="Select Your Birthday"
-                            inputFormat="DD/MM/YYYY"
-                            value={newUserPrefs.receivedDate}
-                            disableFuture
-                            onError={(error) =>
-                              setFormErrors((state) => ({
-                                ...state,
-                                receivedDate: error !== null ? true : false,
-                              }))
-                            }
-                            onChange={(e) => {
-                              setNewUserPrefs((state) => ({
-                                ...state,
-                                receivedDate: e,
-                              }));
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                error={
-                                  attemptedSubmit && formErrors.receivedDate
-                                }
-                                helperText={
-                                  attemptedSubmit && formErrors.receivedDate
-                                    ? "You may not select a future date"
-                                    : false
-                                }
-                                {...params}
-                              />
-                            )}
-                          />
-                        </td>
-                      </tr>
-                    </tbody>
-                  </Table>
-                </Form>
+                        <DatePicker
+                          className={`${styles.input} mt-2 mb-1`}
+                          name="birthday"
+                          type="date"
+                          id="birthday"
+                          label="Your Birthday"
+                          inputFormat="YYYY/MM/DD"
+                          value={newUserPrefs.birthday}
+                          disableFuture
+                          onError={(error) => {
+                            setFormErrors((state) => ({
+                              ...state,
+                              birthday: error !== null ? true : false,
+                            }));
+                          }}
+                          onChange={(e) => {
+                            setNewUserPrefs((state) => ({
+                              ...state,
+                              birthday: e,
+                            }));
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              error={attemptedSubmit && formErrors.birthday}
+                              required
+                              helperText={
+                                attemptedSubmit && formErrors.birthday
+                                  ? "You may not select a future date"
+                                  : false
+                              }
+                            />
+                          )}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </Table>
               </LocalizationProvider>
             ) : (
               <Table
@@ -538,14 +608,16 @@ function ControlPanel({ props }) {
                     <td>{currentUser.lastName}</td>
                   </tr>
                   <tr>
-                    <th>Primary Club</th>
-                    <td>
-                      {
-                        clubList.find(
-                          (club) => club.value === currentUser.defaultClub
-                        ).label
-                      }
-                    </td>
+                    <th>E-Mail</th>
+                    <td>{currentUser.email}</td>
+                  </tr>
+                  <tr>
+                    <th>Birthday</th>
+                    <td>{`${new Date(currentUser.birthday).getFullYear()}-${
+                      new Date(currentUser.birthday).getMonth() < 9
+                        ? "0" + (new Date(currentUser.birthday).getMonth() + 1)
+                        : new Date(currentUser.birthday).getMonth() + 1
+                    }-${new Date(currentUser.birthday).getDate()}`}</td>
                   </tr>
                   <tr>
                     <th>Club Affiliations</th>
@@ -558,17 +630,26 @@ function ControlPanel({ props }) {
                     </td>
                   </tr>
                   <tr>
-                    <th>E-Mail</th>
-                    <td>{currentUser.email}</td>
+                    <th>Primary Club</th>
+                    <td>
+                      {
+                        clubList.find(
+                          (club) => club.value === currentUser.defaultClub
+                        ).label
+                      }
+                    </td>
                   </tr>
-                  <tr>
-                    <th>Birthday</th>
-                    <td>{currentUser.birthday}</td>
-                  </tr>
+
                   <tr>
                     <th>Belt/Date</th>
                     <td>
-                      {currentUser.belt} / {currentUser.receivedDate}
+                      {currentUser.belt} /{" "}
+                      {`${new Date(currentUser.receivedDate).getFullYear()}-${
+                        new Date(currentUser.receivedDate).getMonth() < 9
+                          ? "0" +
+                            (new Date(currentUser.receivedDate).getMonth() + 1)
+                          : new Date(currentUser.receivedDate).getMonth() + 1
+                      }-${new Date(currentUser.receivedDate).getDate()}`}
                     </td>
                   </tr>
                 </tbody>
@@ -729,7 +810,7 @@ function ControlPanel({ props }) {
                                                           field
                                                         ].includes(club.value)}
                                                         onChange={(e) => {
-                                                          handleUpdate(
+                                                          handleUpdatePermissions(
                                                             e.currentTarget.closest(
                                                               "tr"
                                                             ).id,
@@ -745,7 +826,7 @@ function ControlPanel({ props }) {
                                                               ),
                                                             "remove"
                                                           );
-                                                          handleReject(
+                                                          handleRejectPermissions(
                                                             user,
                                                             club
                                                           );
@@ -782,7 +863,7 @@ function ControlPanel({ props }) {
                                                       variant="danger"
                                                       className={styles.reject}
                                                       onClick={() => {
-                                                        handleReject(
+                                                        handleRejectPermissions(
                                                           user,
                                                           club
                                                         );
@@ -881,14 +962,14 @@ function ControlPanel({ props }) {
         <div className={styles.buttons}>
           <Button
             variant="danger"
-            onClick={() => handleReset()}
+            onClick={() => handleResetPermissions()}
           >
             Reset All
           </Button>{" "}
           <Button
             variant="success"
             onClick={() => {
-              handleSubmit();
+              handleSubmitNewPermissions();
             }}
           >
             Save
