@@ -33,16 +33,19 @@ import { kidBelts, adultBelts, age } from "./../utils";
 import styles from "./ControlPanel.module.css";
 
 function ControlPanel({ props }) {
-  const { controlPanelOpen, currentUser, setControlPanelOpen, clubList } =
-    props;
-
+  const {
+    controlPanelOpen,
+    currentUser,
+    setControlPanelOpen,
+    clubList,
+    setCurrentUser,
+  } = props;
   const [allUsers, setAllUsers] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
   const [usersNotShown, setUsersNotShown] = useState([]);
   const [newUserPrefs, setNewUserPrefs] = useState({ ...currentUser });
   const [editingPrefs, setEditingPrefs] = useState(false);
   const [editingAlert, setEditingAlert] = useState(undefined);
-
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [formErrors, setFormErrors] = useState({
     firstName: true,
@@ -56,6 +59,22 @@ function ControlPanel({ props }) {
     needWriteAccess: true,
     defaultClub: true,
   });
+
+  const inputStyling = {
+    input: {
+      fontSize: "14px",
+    },
+
+    span: {
+      fontSize: "12px",
+    },
+    svg: {
+      fontSize: "18px",
+    },
+    ".MuiChip-deleteIcon": {
+      fontSize: "18px",
+    },
+  };
 
   useEffect(() => {
     fetchAllUsers().then((result) => {
@@ -72,6 +91,10 @@ function ControlPanel({ props }) {
       });
     });
   }, [allUsers]);
+
+  // useEffect(() => {
+  //   console.log(userPermissions);
+  // }, [userPermissions]);
 
   //update permissions handler
   const handleUpdatePermissions = (userId, clubId, permission) => {
@@ -148,6 +171,9 @@ function ControlPanel({ props }) {
     if (result.status === 200) {
       fetchAllUsers().then((result) => {
         setAllUsers(result.data);
+        setCurrentUser(
+          result.data.find((user) => user._id === currentUser._id)
+        );
         setUserPermissions(
           result.data.map((item) => ({ ...item, updates: [] }))
         );
@@ -188,7 +214,7 @@ function ControlPanel({ props }) {
         <div className={styles.wrapper}>
           <Card className={`${styles.sideBar} p-2`}>
             <div className={styles.header}>
-              <h4>Welcome {currentUser.firstName}</h4>
+              <h4 className="mb-0">Welcome {currentUser.firstName}</h4>
             </div>
             <div className={styles.header}>
               {editingAlert === true ? (
@@ -200,7 +226,7 @@ function ControlPanel({ props }) {
                   There was an error updating your preferences, please try again
                 </Alert>
               ) : null}
-              <h6>
+              <h6 className="mb-0">
                 Preferences{" "}
                 {editingPrefs ? (
                   <>
@@ -245,7 +271,10 @@ function ControlPanel({ props }) {
                       <th>First Name</th>
                       <td>
                         <TextField
-                          className={`${styles.input} mt-2 mb-1`}
+                          className={styles.input}
+                          sx={inputStyling}
+                          size="small"
+                          margin="dense"
                           error={attemptedSubmit && formErrors.firstName}
                           type="text"
                           name="firstname"
@@ -289,7 +318,10 @@ function ControlPanel({ props }) {
                       <th>Last Name</th>
                       <td>
                         <TextField
-                          className={`${styles.input} mt-2 mb-1`}
+                          className={styles.input}
+                          sx={inputStyling}
+                          size="small"
+                          margin="dense"
                           type="text"
                           name="lastname"
                           id="lastname"
@@ -333,7 +365,10 @@ function ControlPanel({ props }) {
                       <th>E-Mail</th>
                       <td>
                         <TextField
-                          className={`${styles.input} mt-2 mb-1`}
+                          className={styles.input}
+                          sx={inputStyling}
+                          size="small"
+                          margin="dense"
                           type="email"
                           name="email"
                           id="email"
@@ -367,7 +402,6 @@ function ControlPanel({ props }) {
                       <th>Birthday</th>
                       <td>
                         <DatePicker
-                          className={`${styles.input} mt-2 mb-1`}
                           name="birthday"
                           type="date"
                           id="birthday"
@@ -385,11 +419,16 @@ function ControlPanel({ props }) {
                             setNewUserPrefs((state) => ({
                               ...state,
                               birthday: e,
+                              belt: e === null ? null : state.belt,
                             }));
                           }}
                           renderInput={(params) => (
                             <TextField
                               {...params}
+                              sx={inputStyling}
+                              className={styles.input}
+                              size="small"
+                              margin="dense"
                               error={attemptedSubmit && formErrors.birthday}
                               required
                               helperText={
@@ -406,7 +445,7 @@ function ControlPanel({ props }) {
                       <th>Club Affiliations</th>
                       <td>
                         <Autocomplete
-                          className={`${styles.input} mt-2 mb-1`}
+                          className={styles.input}
                           multiple
                           id="club-affiliations"
                           options={clubList}
@@ -441,6 +480,9 @@ function ControlPanel({ props }) {
                           renderInput={(params) => (
                             <TextField
                               {...params}
+                              sx={inputStyling}
+                              size="small"
+                              margin="dense"
                               required
                               label="All clubs you are affiliated with"
                               helperText={
@@ -458,7 +500,7 @@ function ControlPanel({ props }) {
                       <th>Primary Club</th>
                       <td>
                         <Autocomplete
-                          className={`${styles.input} mt-2 mb-1`}
+                          className={styles.input}
                           disabled={newUserPrefs.clubId.length === 0}
                           id="primary-club"
                           options={clubList.filter((club) =>
@@ -489,6 +531,9 @@ function ControlPanel({ props }) {
                           renderInput={(params) => (
                             <TextField
                               {...params}
+                              sx={inputStyling}
+                              size="small"
+                              margin="dense"
                               required
                               error={attemptedSubmit && formErrors.defaultClub}
                               label="Your Primary Club"
@@ -507,8 +552,8 @@ function ControlPanel({ props }) {
                       <th>Belt/Date</th>
                       <td>
                         <Autocomplete
+                          className={styles.input}
                           id="belt-selection"
-                          className={`${styles.input} mt-2 mb-1`}
                           value={newUserPrefs.belt}
                           isOptionEqualToValue={(option, value) =>
                             option.value === value || value === ""
@@ -528,10 +573,9 @@ function ControlPanel({ props }) {
                               : []
                           }
                           onChange={(e, value) => {
-                            console.log(e, value);
                             setNewUserPrefs((state) => ({
                               ...state,
-                              belt: value.value,
+                              belt: value ? value.value : null,
                             }));
 
                             setFormErrors((state) => ({
@@ -542,6 +586,9 @@ function ControlPanel({ props }) {
                           renderInput={(params) => (
                             <TextField
                               {...params}
+                              sx={inputStyling}
+                              size="small"
+                              margin="dense"
                               required
                               label="Your Belt Rank"
                               error={attemptedSubmit && formErrors.belt}
@@ -555,7 +602,6 @@ function ControlPanel({ props }) {
                         />
 
                         <DatePicker
-                          className={`${styles.input} mt-2 mb-1`}
                           name="birthday"
                           type="date"
                           id="birthday"
@@ -578,6 +624,10 @@ function ControlPanel({ props }) {
                           renderInput={(params) => (
                             <TextField
                               {...params}
+                              sx={inputStyling}
+                              className={styles.input}
+                              size="small"
+                              margin="dense"
                               error={attemptedSubmit && formErrors.birthday}
                               required
                               helperText={
@@ -657,7 +707,7 @@ function ControlPanel({ props }) {
             )}
 
             <div className={styles.header}>
-              <h6>Roles/Access</h6>
+              <h6 className="mb-0">Roles/Access</h6>
             </div>
             <Table
               striped
@@ -667,31 +717,43 @@ function ControlPanel({ props }) {
                 <tr>
                   <th>Coach</th>
                   <td>
-                    {currentUser.coach.map((id) => (
-                      <div key={id}>
-                        {clubList.find((club) => club.value === id).label}
-                      </div>
-                    ))}
+                    {currentUser.coach.length > 0 ? (
+                      currentUser.coach.map((id) => (
+                        <div key={id}>
+                          {clubList.find((club) => club.value === id).label}
+                        </div>
+                      ))
+                    ) : (
+                      <div>None Assigned</div>
+                    )}
                   </td>
                 </tr>
                 <tr>
                   <th>Write Access</th>
                   <td>
-                    {currentUser.writeAccess.map((id) => (
-                      <div key={id}>
-                        {clubList.find((club) => club.value === id).label}
-                      </div>
-                    ))}
+                    {currentUser.writeAccess.length > 0 ? (
+                      currentUser.writeAccess.map((id) => (
+                        <div key={id}>
+                          {clubList.find((club) => club.value === id).label}
+                        </div>
+                      ))
+                    ) : (
+                      <div>None Assigned</div>
+                    )}
                   </td>
                 </tr>
                 <tr>
                   <th>Admin Rights</th>
                   <td>
-                    {currentUser.admin.map((id) => (
-                      <div key={id}>
-                        {clubList.find((club) => club.value === id).label}
-                      </div>
-                    ))}
+                    {currentUser.admin.length > 0 ? (
+                      currentUser.admin.map((id) => (
+                        <div key={id}>
+                          {clubList.find((club) => club.value === id).label}
+                        </div>
+                      ))
+                    ) : (
+                      <div>None Assigned</div>
+                    )}
                   </td>
                 </tr>
               </tbody>
@@ -699,7 +761,7 @@ function ControlPanel({ props }) {
           </Card>
           <Card className={styles.clubCard}>
             <div className={styles.header}>
-              <h4>Clubs you manage</h4>
+              <h4 className="mb-0">Clubs you manage</h4>
             </div>
             {clubList.length === 0
               ? null
@@ -738,7 +800,7 @@ function ControlPanel({ props }) {
                               </Badge>
                             </div>
                           </Accordion.Header>
-                          <Accordion.Body>
+                          <Accordion.Body className={styles.accordionBody}>
                             <Form>
                               <Table
                                 striped
@@ -957,23 +1019,23 @@ function ControlPanel({ props }) {
                     );
                   }
                 })}
+            <div className={styles.buttons}>
+              <Button
+                variant="danger"
+                onClick={() => handleResetPermissions()}
+              >
+                Reset All
+              </Button>{" "}
+              <Button
+                variant="success"
+                onClick={() => {
+                  handleSubmitNewPermissions();
+                }}
+              >
+                Save
+              </Button>
+            </div>
           </Card>
-        </div>
-        <div className={styles.buttons}>
-          <Button
-            variant="danger"
-            onClick={() => handleResetPermissions()}
-          >
-            Reset All
-          </Button>{" "}
-          <Button
-            variant="success"
-            onClick={() => {
-              handleSubmitNewPermissions();
-            }}
-          >
-            Save
-          </Button>
         </div>
       </Card>
     </Modal>

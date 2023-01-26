@@ -53,6 +53,7 @@ function App() {
           clubList={clubList}
           setLoggedIn={setLoggedIn}
           setLoading={setLoading}
+          setCurrentUser={setCurrentUser}
         />
       ) : registering ? (
         <Registration

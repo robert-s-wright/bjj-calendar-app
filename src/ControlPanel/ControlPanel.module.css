@@ -2,7 +2,7 @@
   width: 90vw;
   min-width: 300px;
   max-width: 1300px;
-  padding: 20px;
+  padding: 20px 0px;
   align-items: center;
   gap: 10px;
   text-align: left;
@@ -19,18 +19,32 @@
 
 .wrapper {
   display: grid;
-  grid-template-columns: 1.3fr 2fr;
+  grid-template-columns: 1.4fr 2fr;
   width: 95%;
   gap: 10px;
   margin: auto;
 }
 
+.accordion {
+  margin: 10px 0px;
+}
+
+.accordionBody {
+  padding: 0px;
+}
+
 .modalContainer Table {
   font-size: calc(0.3rem + 0.7vw);
+  margin: 0;
 }
 
 .sideBar {
   align-items: center;
+  height: fit-content;
+}
+
+.header {
+  margin: 15px 0px 5px 0px;
 }
 
 .editPrefs {
@@ -56,6 +70,7 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
+  height: 100%;
 }
 
 .form {
@@ -75,8 +90,10 @@
 }
 
 .clubCard {
-  padding: 10px;
+  padding: 10px 0px;
   align-items: center;
+  justify-content: flex-start;
+  height: fit-content;
 }
 
 .clubContainer {
@@ -119,7 +136,7 @@
   gap: 10px;
 }
 
-@media only screen and (max-width: 950px) {
+@media only screen and (max-width: 1050px) {
   .wrapper {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;

@@ -56,7 +56,6 @@ function Registration(props) {
     setAttemptedSubmit(true);
 
     if (Object.values(formErrors).some((value) => value === true)) {
-      console.log(formErrors);
       return;
     } else {
       const result = await registerUser(user);
@@ -223,6 +222,7 @@ function Registration(props) {
             setUser((state) => ({
               ...state,
               birthday: e,
+              belt: e === null ? null : state.belt,
             }));
           }}
           renderInput={(params) => (
@@ -233,6 +233,52 @@ function Registration(props) {
               helperText={
                 attemptedSubmit && formErrors.birthday
                   ? "You may not select a future date"
+                  : false
+              }
+            />
+          )}
+        />
+        <Autocomplete
+          id="belt-selection"
+          disabled={user.birthday === null}
+          className={`${styles.input} mb-3`}
+          value={user.belt}
+          isOptionEqualToValue={(option, value) =>
+            option.value === value || value === ""
+          }
+          options={
+            age(user) !== null && age(user) > 15
+              ? adultBelts.map((belt) => ({
+                  value: belt,
+                  label: belt,
+                }))
+              : age(user) !== null && age(user) < 15
+              ? kidBelts.map((belt) => ({
+                  value: belt,
+                  label: belt,
+                }))
+              : []
+          }
+          onChange={(e, value) => {
+            setUser((state) => ({
+              ...state,
+              belt: value ? value.value : null,
+            }));
+
+            setFormErrors((state) => ({
+              ...state,
+              belt: value === null ? true : false,
+            }));
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              required
+              label="Your Belt Rank"
+              error={attemptedSubmit && formErrors.belt}
+              helperText={
+                attemptedSubmit && formErrors.belt
+                  ? "Please select a belt"
                   : false
               }
             />
@@ -314,52 +360,6 @@ function Registration(props) {
               helperText={
                 attemptedSubmit && formErrors.clubId
                   ? "Please select a primary club"
-                  : false
-              }
-            />
-          )}
-        />
-        <Autocomplete
-          id="belt-selection"
-          className={`${styles.input} mb-3`}
-          value={user.belt}
-          isOptionEqualToValue={(option, value) =>
-            option.value === value || value === ""
-          }
-          options={
-            age(user) !== null && age(user) > 15
-              ? adultBelts.map((belt) => ({
-                  value: belt,
-                  label: belt,
-                }))
-              : age(user) !== null && age(user) < 15
-              ? kidBelts.map((belt) => ({
-                  value: belt,
-                  label: belt,
-                }))
-              : []
-          }
-          onChange={(e, value) => {
-            console.log(e, value);
-            setUser((state) => ({
-              ...state,
-              belt: value.value,
-            }));
-
-            setFormErrors((state) => ({
-              ...state,
-              belt: value === null ? true : false,
-            }));
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              required
-              label="Your Belt Rank"
-              error={attemptedSubmit && formErrors.belt}
-              helperText={
-                attemptedSubmit && formErrors.belt
-                  ? "Please select a belt"
                   : false
               }
             />

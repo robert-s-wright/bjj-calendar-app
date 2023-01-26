@@ -26,7 +26,8 @@ import { Star, GearFill } from "react-bootstrap-icons/";
 import styles from "./Calendar.module.css";
 
 function Calendar(props) {
-  const { currentUser, clubList, setLoggedIn, setLoading } = props;
+  const { currentUser, clubList, setLoggedIn, setLoading, setCurrentUser } =
+    props;
 
   const today = new Date();
 
@@ -789,6 +790,7 @@ function Calendar(props) {
             userList,
             setUserList,
             clubList,
+            setCurrentUser,
           }}
         />
       ) : null}
