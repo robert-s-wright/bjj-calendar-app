@@ -2,35 +2,10 @@
   width: 90vw;
   min-width: 300px;
   max-width: 1300px;
-  padding: 20px 0px;
+  padding: 10px 0px;
   align-items: center;
   gap: 10px;
   text-align: left;
-}
-
-.modalContainer td,
-.modalContainer th {
-  text-align: center;
-  vertical-align: middle;
-  transition: 0.5s all ease;
-  padding: 5px !important;
-  white-space: nowrap;
-}
-
-.wrapper {
-  display: grid;
-  grid-template-columns: 1.4fr 2fr;
-  width: 95%;
-  gap: 10px;
-  margin: auto;
-}
-
-.accordion {
-  margin: 10px 0px;
-}
-
-.accordionBody {
-  padding: 0px;
 }
 
 .modalContainer Table {
@@ -43,97 +18,21 @@
   height: fit-content;
 }
 
-.header {
-  margin: 15px 0px 5px 0px;
-}
-
-.editPrefs {
-  transition: 0.3s all ease;
-  margin: 5px;
-}
-.editPrefsButton {
-  margin: 5px;
-}
-
 .editPrefs:hover {
   cursor: pointer;
   color: hsla(210, 100%, 50%);
 }
 
-.sideBar th {
-  width: 20%;
-}
-
-.sideBar td {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  height: 100%;
-}
-
 .form {
   width: 100%;
-  font-size: 10px;
 }
-
-.input {
-  width: 60% !important;
-  min-width: 200px !important;
-  font-size: calc(5px + 1vw);
+.buttons {
+  margin-left: 10px;
 }
 
 .date {
   width: 60% !important;
   min-width: 200px !important;
-}
-
-.clubCard {
-  padding: 10px 0px;
-  align-items: center;
-  justify-content: flex-start;
-  height: fit-content;
-}
-
-.clubContainer {
-  width: 95%;
-}
-
-.clubContainer Form {
-  width: 100%;
-}
-/* .header {
-  text-align: center;
-} */
-
-.accordion Button {
-  font-size: calc(0.5rem + 0.7vw) !important;
-  padding: 5px;
-  margin: 5px 0px;
-}
-
-.updated {
-  background-color: hsl(120, 100%, 90%) !important;
-}
-
-.checkBox input {
-  transition: 0.3s all ease;
-}
-
-.checkBox input:hover {
-  cursor: pointer;
-}
-
-.reject {
-  padding: 3px !important;
-}
-
-.buttons {
-  width: 95%;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
 }
 
 @media only screen and (max-width: 1050px) {

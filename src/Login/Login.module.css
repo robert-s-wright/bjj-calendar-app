@@ -1,16 +1,53 @@
-.container {
+.wrapper {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 100%;
+
+  gap: 10px;
+  width: 80%;
+  max-width: 600px;
+  position: absolute;
+}
+
+.header {
+  padding: 20px;
 }
 
 .loginCard {
-  width: 80%;
-  max-width: 600px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
 }
 
-.select {
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.input {
   text-align: left;
+  width: 100%;
+}
+.buttonContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+}
+
+.addClubContainer {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
 }

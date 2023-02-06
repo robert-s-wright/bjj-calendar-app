@@ -1,20 +1,31 @@
+.card {
+  width: 80%;
+  max-width: 600px;
+  padding: 20px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
 .container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 100%;
+  gap: 10px;
 }
 
-.card {
-  width: 80%;
-  max-width: 600px;
-}
-
-.select {
+.input {
   text-align: left;
+  width: 100%;
 }
 
-.select .rbt-input-wrapper {
-  background-color: red !important;
+.buttonContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }

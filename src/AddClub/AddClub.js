@@ -3,44 +3,31 @@ import { useEffect, useState } from "react";
 
 import { getCountries, getAffiliations, postClub } from "../requests/requests";
 
-import Card from "react-bootstrap/Card";
-import Button from "react-bootstrap/Button";
-import FloatingLabel from "react-bootstrap/FloatingLabel";
-import Form from "react-bootstrap/Form";
-import Alert from "react-bootstrap/Alert";
-
-import { Typeahead } from "react-bootstrap-typeahead";
-
-import Select from "react-select";
-import Creatable, { useCreatable } from "react-select/creatable";
-
-import affiliations from "../affiliations";
+import { TextField, Autocomplete, Card, Button, Alert } from "@mui/material";
 
 import styles from "./AddClub.module.css";
 
-function AddClub(props) {
-  const { setAddingClub } = props;
+function AddClub(props, nodeRef) {
+  const { setAddingClub, transitionStyle, setLoggingIn } = props;
 
   const blankClub = {
-    clubName: "",
-    affiliation: "",
-    address: "",
-    city: "",
-    zip: "",
-    country: "",
-    contact: "",
-    email: "",
-    phone: "",
-    website: "",
+    clubName: null,
+    affiliation: null,
+    address: null,
+    city: null,
+    zip: null,
+    country: null,
+    contact: null,
+    email: null,
+    phone: null,
+    website: null,
   };
 
   const [newClub, setNewClub] = useState(blankClub);
 
   const [countries, setCountries] = useState([]);
 
-  const [affiliationList, setAffiliationList] = useState({});
-
-  const [validated, setValidated] = useState(false);
+  const [affiliationList, setAffiliationList] = useState([]);
 
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
@@ -82,13 +69,11 @@ function AddClub(props) {
     });
   }, []);
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (newClub) => {
     setAttemptedSubmit(true);
-    e.preventDefault();
 
-    if (e.target.checkValidity() === false) {
-      e.preventDefault();
-      e.stopPropagation();
+    if (Object.values(formErrors).includes(true)) {
+      return;
     } else {
       const result = await postClub(newClub);
       if (result.data) {
@@ -97,309 +82,329 @@ function AddClub(props) {
         setRegisterSuccess(false);
       }
     }
+    setTimeout(() => {
+      setRegisterSuccess(undefined);
+    }, 3000);
   };
 
-  useEffect(() => {
-    console.log(newClub);
-  }, [newClub]);
-
   return (
-    <Card className={`p-3 m-3 ${styles.card}`}>
-      <Card className={`p-3 m-3`}>
-        <h3>Begin Using This Software In Your Club!</h3>
-      </Card>
+    <Card
+      className={styles.card}
+      style={{ ...transitionStyle }}
+    >
+      <h3 className={styles.header}>Begin Using This Software In Your Club!</h3>
       {
         {
-          true: <Alert variant="success">Club registered successfully.</Alert>,
+          true: <Alert severity="success">Club registered successfully.</Alert>,
           false: (
-            <Alert variant="warning">
+            <Alert severity="warning">
               There was an error while adding your club, please try again.
             </Alert>
           ),
           undefined: null,
         }[registerSuccess]
       }
-      <Form
-        noValidate
-        validated={validated}
-        onSubmit={handleRegister}
-      >
-        <FloatingLabel
+      <div className={styles.container}>
+        <TextField
+          error={attemptedSubmit && formErrors.clubName}
+          className={styles.input}
+          type="text"
+          id="clubname"
           label="Club Name"
-          className="mb-3"
-        >
-          <Form.Control
-            required
-            isValid={!formErrors.clubName}
-            isInvalid={attemptedSubmit && formErrors.clubName}
-            type="text"
-            name="club"
-            placeholder="Club Name"
-            value={newClub.clubName}
-            onChange={(e) => {
-              setNewClub((state) => ({ ...state, clubName: e.target.value }));
-              setFormErrors((state) => ({
-                ...state,
-                clubName: e.target.value.length > 0 ? false : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter your club name
-          </Form.Control.Feedback>
-        </FloatingLabel>
+          required={true}
+          value={newClub.clubName}
+          onChange={(e) => {
+            setNewClub((state) => ({
+              ...state,
+              clubName: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              clubName: e.target.value.length > 0 ? false : true,
+            }));
+          }}
+          helperText={
+            attemptedSubmit && formErrors.clubName
+              ? "Please enter your club name"
+              : false
+          }
+        />
 
-        <Form.Group className="mb-3">
-          <Typeahead
-            id="affiliation"
-            required
-            isValid={!formErrors.affiliation}
-            isInvalid={attemptedSubmit && formErrors.affiliation}
-            placeholder="Select your affiliation"
-            className={` ${styles.select} ${
-              attemptedSubmit && formErrors.affiliation
-                ? "is-invalid"
-                : "is-valid"
-            }
-            `}
-            isClearable
-            options={affiliationList}
-            onChange={(e) => {
-              e.length === 1
-                ? setNewClub((state) => ({ ...state, affiliation: e[0].value }))
-                : setNewClub((state) => ({ ...state, affiliation: "" }));
-              setFormErrors((state) => ({
-                ...state,
-                affiliation:
-                  e.length === 1
-                    ? e[0].value.length > 0
-                      ? false
-                      : true
-                    : true,
-              }));
-            }}
-          />
-          <Form.Control.Feedback type="invalid">
-            Please select an affiliation
-          </Form.Control.Feedback>
-        </Form.Group>
+        <Autocomplete
+          id="affiliation-selection"
+          className={styles.input}
+          value={
+            newClub.affiliation === null
+              ? ""
+              : affiliationList.find((obj) =>
+                  newClub.affiliation.includes(obj.value)
+                ).label
+          }
+          isOptionEqualToValue={(option, value) => {
+            return option.label === value || value === "";
+          }}
+          options={affiliationList}
+          onChange={(e, value) => {
+            setNewClub((state) => ({
+              ...state,
+              affiliation: value ? value.value : null,
+            }));
 
-        <FloatingLabel
+            setFormErrors((state) => ({
+              ...state,
+              affiliation: value === null ? true : false,
+            }));
+          }}
+          renderOption={(params, option) => {
+            return (
+              <li
+                {...params}
+                key={option.value}
+              >
+                {option.label}
+              </li>
+            );
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              key={params.inputProps.value}
+              required
+              label="Your Club's Affiliation"
+              error={attemptedSubmit && formErrors.affiliation}
+              helperText={
+                attemptedSubmit && formErrors.affiliation
+                  ? "Please select your club's affiliation"
+                  : false
+              }
+            />
+          )}
+        />
+
+        <TextField
+          error={attemptedSubmit && formErrors.address}
+          className={styles.input}
+          type="text"
+          id="address"
           label="Address"
-          className="mb-3"
-        >
-          <Form.Control
-            type="text"
-            name="address"
-            isValid={!formErrors.address}
-            isInvalid={attemptedSubmit && formErrors.address}
-            placeholder="Address"
-            value={newClub.address}
-            required
-            onChange={(e) => {
-              setNewClub((state) => ({ ...state, address: e.target.value }));
-              setFormErrors((state) => ({
-                ...state,
-                address: e.target.value.length > 0 ? false : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter your club address
-          </Form.Control.Feedback>
-        </FloatingLabel>
+          required={true}
+          value={newClub.address}
+          onChange={(e) => {
+            setNewClub((state) => ({
+              ...state,
+              address: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              address: e.target.value.length > 0 ? false : true,
+            }));
+          }}
+          helperText={
+            attemptedSubmit && formErrors.address
+              ? "Please enter your club address"
+              : false
+          }
+        />
 
-        <FloatingLabel
+        <TextField
+          error={attemptedSubmit && formErrors.city}
+          className={styles.input}
+          type="text"
+          id="city"
           label="City"
-          className="mb-3"
-        >
-          <Form.Control
-            type="text"
-            name="city"
-            isValid={!formErrors.city}
-            isInvalid={attemptedSubmit && formErrors.city}
-            placeholder="City"
-            value={newClub.city}
-            required
-            onChange={(e) => {
-              setNewClub((state) => ({ ...state, city: e.target.value }));
-              setFormErrors((state) => ({
-                ...state,
-                city: e.target.value.length > 0 ? false : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter your club's city
-          </Form.Control.Feedback>
-        </FloatingLabel>
+          required={true}
+          value={newClub.city}
+          onChange={(e) => {
+            setNewClub((state) => ({
+              ...state,
+              city: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              city: e.target.value.length > 0 ? false : true,
+            }));
+          }}
+          helperText={
+            attemptedSubmit && formErrors.city ? "Please enter a city" : false
+          }
+        />
 
-        <FloatingLabel
+        <TextField
+          error={attemptedSubmit && formErrors.zip}
+          className={styles.input}
+          type="text"
+          id="zip"
           label="Zip Code"
-          className="mb-3"
-        >
-          <Form.Control
-            type="text"
-            name="zip"
-            isValid={!formErrors.zip}
-            isInvalid={attemptedSubmit && formErrors.zip}
-            placeholder="Zip Code"
-            value={newClub.zip}
-            required
-            onChange={(e) => {
-              setNewClub((state) => ({ ...state, zip: e.target.value }));
-              setFormErrors((state) => ({
-                ...state,
-                zip: e.target.value.length > 0 ? false : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter your club's zip code
-          </Form.Control.Feedback>
-        </FloatingLabel>
-        <Form.Group className="mb-3">
-          <Typeahead
-            placeholder="Country"
-            className={`${styles.select} ${
-              attemptedSubmit && formErrors.country ? "is-invalid" : "is-valid"
-            }`}
-            isValid={!formErrors.country}
-            isInvalid={attemptedSubmit && formErrors.country}
-            options={countries}
-            onChange={(e) => {
-              e.length === 1
-                ? setNewClub((state) => ({ ...state, country: e.value }))
-                : setNewClub((state) => ({ ...state, country: "" }));
-              setFormErrors((state) => ({
-                ...state,
-                country:
-                  e.length === 1
-                    ? e[0].value.length > 0
-                      ? false
-                      : true
-                    : true,
-              }));
-            }}
-          />
-          <Form.Control.Feedback type="invalid">
-            Please select your country
-          </Form.Control.Feedback>
-        </Form.Group>
+          required={true}
+          value={newClub.zip}
+          onChange={(e) => {
+            setNewClub((state) => ({
+              ...state,
+              zip: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              zip: e.target.value.length > 0 ? false : true,
+            }));
+          }}
+          helperText={
+            attemptedSubmit && formErrors.zip
+              ? "Please enter a zip code"
+              : false
+          }
+        />
 
-        <FloatingLabel
+        <Autocomplete
+          id="country-selection"
+          className={styles.input}
+          value={newClub.country}
+          isOptionEqualToValue={(option, value) =>
+            option.value === value || value === null
+          }
+          options={countries}
+          onChange={(e, value) => {
+            setNewClub((state) => ({
+              ...state,
+              country: value ? value.value : null,
+            }));
+
+            setFormErrors((state) => ({
+              ...state,
+              country: value === null ? true : false,
+            }));
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              required
+              label="Your Club's Country"
+              error={attemptedSubmit && formErrors.country}
+              helperText={
+                attemptedSubmit && formErrors.country
+                  ? "Please select a country"
+                  : false
+              }
+            />
+          )}
+        />
+
+        <TextField
+          error={attemptedSubmit && formErrors.contact}
+          className={styles.input}
+          type="text"
+          id="contact"
           label="Contact Name"
-          className="mb-3"
-        >
-          <Form.Control
-            type="text"
-            name="name"
-            isValid={!formErrors.zip}
-            isInvalid={attemptedSubmit && formErrors.zip}
-            placeholder="Contact Name"
-            value={newClub.contact}
-            required
-            onChange={(e) => {
-              setNewClub((state) => ({ ...state, contact: e.target.value }));
-              setFormErrors((state) => ({
-                ...state,
-                name: e.target.value.length > 0 ? false : true,
-              }));
+          required={true}
+          value={newClub.contact}
+          onChange={(e) => {
+            setNewClub((state) => ({
+              ...state,
+              contact: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              contact: e.target.value.length > 0 ? false : true,
+            }));
+          }}
+          helperText={
+            attemptedSubmit && formErrors.contact
+              ? "Please enter your club's main point of contact"
+              : false
+          }
+        />
+
+        <TextField
+          error={attemptedSubmit && formErrors.email}
+          className={styles.input}
+          type="text"
+          id="email"
+          label="E-Mail"
+          required={true}
+          value={newClub.email}
+          onChange={(e) => {
+            setNewClub((state) => ({
+              ...state,
+              email: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              email: e.target.value.length > 0 ? false : true,
+            }));
+          }}
+          helperText={
+            attemptedSubmit && formErrors.email
+              ? "Please enter your club's contact e-mail"
+              : false
+          }
+        />
+
+        <TextField
+          error={attemptedSubmit && formErrors.phone}
+          className={styles.input}
+          type="phone"
+          id="phone"
+          label="Phone Number"
+          required={true}
+          value={newClub.phone}
+          onChange={(e) => {
+            setNewClub((state) => ({
+              ...state,
+              phone: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              phone: e.target.value.length > 0 ? false : true,
+            }));
+          }}
+          helperText={
+            attemptedSubmit && formErrors.phone
+              ? "Please enter your club's phone number"
+              : false
+          }
+        />
+
+        <TextField
+          error={attemptedSubmit && formErrors.website}
+          className={styles.input}
+          type="website"
+          id="website"
+          label="Your Club's Website"
+          value={newClub.website}
+          onChange={(e) => {
+            setNewClub((state) => ({
+              ...state,
+              website: e.target.value,
+            }));
+            setFormErrors((state) => ({
+              ...state,
+              website: e.target.value.length > 0 ? false : true,
+            }));
+          }}
+          helperText={
+            attemptedSubmit && formErrors.website
+              ? "Please enter your club's website"
+              : false
+          }
+        />
+        <div className={styles.buttonContainer}>
+          <Button
+            variant="contained"
+            onClick={() => handleRegister(newClub)}
+          >
+            Add Club
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={() => {
+              setAddingClub(false);
+              setLoggingIn(true);
             }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter your club contact's full name
-          </Form.Control.Feedback>
-        </FloatingLabel>
-
-        <FloatingLabel
-          label="Club Contact E-mail"
-          className="mb-3"
-        >
-          <Form.Control
-            type="email"
-            name="email"
-            isValid={!formErrors.email}
-            isInvalid={attemptedSubmit && formErrors.email}
-            placeholder="E-Mail"
-            value={newClub.email}
-            required
-            onChange={(e) => {
-              setNewClub((state) => ({ ...state, email: e.target.value }));
-              setFormErrors((state) => ({
-                ...state,
-                email: e.target.value.match(
-                  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
-                )
-                  ? false
-                  : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter your club contact e-mail
-          </Form.Control.Feedback>
-        </FloatingLabel>
-
-        <FloatingLabel
-          label="Phone"
-          className="mb-3"
-        >
-          <Form.Control
-            type="phone"
-            name="phone"
-            isValid={!formErrors.phone}
-            isInvalid={attemptedSubmit && formErrors.phone}
-            placeholder="Phone"
-            value={newClub.phone}
-            required
-            onChange={(e) => {
-              setNewClub((state) => ({ ...state, phone: e.target.value }));
-              setFormErrors((state) => ({
-                ...state,
-                phone: e.target.value.length > 0 ? false : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter your club's contact phone number
-          </Form.Control.Feedback>
-        </FloatingLabel>
-
-        <FloatingLabel
-          label="Website"
-          className="mb-3"
-        >
-          <Form.Control
-            type="website"
-            name="website"
-            isValid={!formErrors.website}
-            isInvalid={attemptedSubmit && formErrors.website}
-            placeholder="Website"
-            value={newClub.website}
-            required
-            onChange={(e) => {
-              setNewClub((state) => ({ ...state, website: e.target.value }));
-              setFormErrors((state) => ({
-                ...state,
-                website: e.target.value.length > 0 ? false : true,
-              }));
-            }}
-          ></Form.Control>
-          <Form.Control.Feedback type="invalid">
-            Please enter your club website address
-          </Form.Control.Feedback>
-        </FloatingLabel>
-
-        <Button
-          className="m-2"
-          type="submit"
-        >
-          Add Club
-        </Button>
-
-        <Button onClick={() => setAddingClub(false)}>Back to Login</Button>
-      </Form>
+          >
+            Back to Login
+          </Button>
+        </div>
+      </div>
     </Card>
   );
 }

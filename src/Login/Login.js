@@ -1,18 +1,21 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, forwardRef } from "react";
 
 import styles from "./Login.module.css";
 
-import { loginUser, authorizeUser } from "../requests/requests";
+import { loginUser } from "../requests/requests";
 
-import Card from "react-bootstrap/Card";
-import Form from "react-bootstrap/Form";
-import FloatingLabel from "react-bootstrap/FloatingLabel";
-import Button from "react-bootstrap/Button";
-import Alert from "react-bootstrap/Alert";
+import { TextField, Button, Card, Alert, Fade } from "@mui/material";
 
-function Login(props) {
-  const { setLoading, setAddingClub, setRegistering, verifyUser } = props;
+const Login = React.forwardRef((props, nodeRef) => {
+  const {
+    setLoading,
+    setAddingClub,
+    setRegistering,
+    setLoggingIn,
+    verifyUser,
+    transitionStyle,
+  } = props;
 
   const emptyUser = {
     email: "",
@@ -24,7 +27,15 @@ function Login(props) {
 
   const [loginSuccess, setLoginSuccess] = useState(undefined);
 
-  const handleLogin = async () => {
+  const [formErrors, setFormErrors] = useState({
+    email: true,
+    password: true,
+  });
+
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
     const result = await loginUser(user);
 
     if (result.data.success === false) {
@@ -38,105 +49,140 @@ function Login(props) {
       await verifyUser();
       setLoginSuccess(true);
       setLoading(false);
+      setLoggingIn(false);
     }
   };
 
   return (
-    <>
-      <div className={styles.container}>
-        <Card className={`p-3 m-3`}>
-          <h3>BJJ Calendar Login</h3>
-        </Card>
-        <Card className={`p-3 ${styles.loginCard}`}>
-          <Form>
-            {
-              {
-                false: (
-                  <Alert variant="warning">
-                    You have entered an invalid password, check your credentials
-                    and try again.
-                  </Alert>
-                ),
-                "no access": (
-                  <Alert variant="warning">
-                    You lack rights to access the application. Contact the
-                    administrator to receive access rights.
-                  </Alert>
-                ),
-                null: (
-                  <Alert variant="warning">
-                    You have entered an invalid username, check your credentials
-                    and try again.
-                  </Alert>
-                ),
-              }[loginSuccess]
-            }
-
-            <FloatingLabel
-              label="E-mail"
-              className="mb-3"
-            >
-              <Form.Control
-                type="email"
-                name="email"
-                placeholder="E-Mail"
-                required
-                value={user.email}
-                onChange={(e) => {
-                  setUser((state) => ({ ...state, email: e.target.value }));
-                }}
-              ></Form.Control>
-            </FloatingLabel>
-
-            <FloatingLabel
-              label="Password"
-              className="mb-3"
-            >
-              <Form.Control
-                type="password"
-                name="password"
-                placeholder="Password"
-                required
-                value={user.password}
-                onChange={(e) => {
-                  setUser((state) => ({
-                    ...state,
-                    password: e.target.value,
-                  }));
-                }}
-              ></Form.Control>
-            </FloatingLabel>
-
-            <Button
-              className="m-2"
-              onClick={() => {
-                handleLogin();
-              }}
-            >
-              Login
-            </Button>
-            <div>Need to sign up?</div>
-            <Button
-              className="m-2"
-              onClick={() => {
-                setRegistering(true);
-                setUser(emptyUser);
-                setLoginSuccess(undefined);
-              }}
-            >
-              Register Here
-            </Button>
-          </Form>
-        </Card>
-      </div>
-      <Card className="p-3 m-3">
-        <div className="mb-2">
-          Would you like to begin using this calendar in your club?
-        </div>
-        <Button onClick={() => setAddingClub(true)}>Click Here</Button>
+    <form
+      className={styles.wrapper}
+      style={{ ...transitionStyle }}
+    >
+      <Card className={styles.header}>
+        <h3>BJJ Calendar Login</h3>
       </Card>
-    </>
+      <Card className={styles.loginCard}>
+        {
+          {
+            false: (
+              <Alert severity="warning">
+                You have entered an invalid password, check your credentials and
+                try again.
+              </Alert>
+            ),
+            "no access": (
+              <Alert severity="warning">
+                You lack rights to access the application. Contact the
+                administrator to receive access rights.
+              </Alert>
+            ),
+            null: (
+              <Alert severity="warning">
+                You have entered an invalid username, check your credentials and
+                try again.
+              </Alert>
+            ),
+          }[loginSuccess]
+        }
+        <div className={styles.container}>
+          <TextField
+            className={styles.input}
+            name="username"
+            type="username"
+            id="username"
+            label="E-mail"
+            required
+            error={attemptedSubmit && formErrors.password}
+            helperText={
+              attemptedSubmit && formErrors.password
+                ? "Please enter your login e-mail"
+                : null
+            }
+            value={user.email ? user.email : ""}
+            onChange={(e) => {
+              setUser((state) => ({
+                ...state,
+                email: e.target.value,
+              }));
+              setFormErrors((state) => ({
+                ...state,
+                email: e.target.value.match(
+                  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+                )
+                  ? false
+                  : true,
+              }));
+            }}
+          />
+          <TextField
+            className={styles.input}
+            name="password"
+            type="password"
+            id="password"
+            label="Password"
+            required
+            error={attemptedSubmit && formErrors.password}
+            helperText={
+              attemptedSubmit && formErrors.password
+                ? "Please enter your password"
+                : null
+            }
+            value={user.password ? user.password : ""}
+            onChange={(e) => {
+              setUser((state) => ({
+                ...state,
+                password: e.target.value,
+              }));
+              setFormErrors((state) => ({
+                ...state,
+                password: e.target.value.match(
+                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\S)[A-Za-z\S]{8,30}$/
+                )
+                  ? false
+                  : true,
+              }));
+            }}
+          />
+        </div>
+        <div className={styles.buttonContainer}>
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            onClick={(e) => {
+              handleLogin(e);
+            }}
+          >
+            Login
+          </Button>
+          <div>Need to sign up?</div>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setRegistering(true);
+              setLoggingIn(false);
+              setUser(emptyUser);
+              setLoginSuccess(undefined);
+            }}
+          >
+            Register Here
+          </Button>
+        </div>
+      </Card>
+      <Card className={styles.addClubContainer}>
+        <div>Would you like to begin using this calendar in your club?</div>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setAddingClub(true);
+            setLoggingIn(false);
+          }}
+        >
+          Click Here
+        </Button>
+      </Card>
+    </form>
   );
-}
+});
 
 export default Login;

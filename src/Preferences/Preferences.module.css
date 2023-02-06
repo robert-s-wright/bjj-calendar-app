@@ -1,0 +1,65 @@
+.wrapper {
+  width: 90%;
+  gap: 10px;
+  margin: auto;
+}
+
+.flexContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  row-gap: 20px;
+  column-gap: 20px;
+}
+
+.header {
+  /* margin: 15px 0px 5px 0px; */
+  text-align: center;
+  height: 60px;
+}
+
+.container {
+  flex-grow: 1;
+  flex-basis: 300px;
+}
+
+.table {
+  /* width: fit-content; */
+  width: 100%;
+  padding: 8px 16px 16px !important;
+  /* margin: auto !important; */
+  /* display: inline; */
+  /* flex-basis: 300px; */
+  margin: 10px;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.editPrefs {
+  transition: 0.3s all ease;
+  margin: 5px;
+}
+
+.editPrefsButton {
+  margin: 5px;
+}
+
+.preferencesButtons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin: 10px;
+}
+
+.input {
+  width: 70% !important;
+  min-width: 200px !important;
+  font-size: calc(5px + 1vw);
+  margin: 5px auto;
+}

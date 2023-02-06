@@ -1,0 +1,17 @@
+.changeMonth,
+.changeWeek {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px;
+  width: 100%;
+  position: absolute;
+  color: white !important;
+  bottom: 0;
+}
+
+.toggle {
+  position: absolute !important;
+  left: 50%;
+  transform: translateX(-50%);
+}

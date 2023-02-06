@@ -35,4 +35,16 @@ const age = (user) => {
     : null;
 };
 
-export { capitalize, kidBelts, adultBelts, age };
+function durationCalculation(value) {
+  let hour = 0;
+  let minutes = value;
+
+  while (minutes >= 60) {
+    hour += 1;
+    minutes -= 60;
+  }
+
+  return `${hour}:${minutes === 0 ? "00" : minutes}`;
+}
+
+export { capitalize, kidBelts, adultBelts, age, durationCalculation };

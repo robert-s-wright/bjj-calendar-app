@@ -1,0 +1,37 @@
+.weekView {
+  display: grid;
+  gap: 1px;
+  width: 100%;
+  padding: 10px;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(1, 663px);
+  flex-basis: 650px;
+}
+
+.activeBtn {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: space-between !important;
+  align-items: flex-start;
+  padding: 0 !important;
+  overflow-y: hidden;
+}
+
+.inactiveMonth {
+  background-color: transparent !important;
+}
+
+.eventsBadgeWeek {
+  width: 100%;
+  /* font-size: 0.7rem; */
+  text-align: left;
+}
+
+.smallEvent {
+  padding: 0px 2px 0px 2px;
+  overflow: hidden;
+}
+
+.smallEvent:hover {
+  cursor: pointer;
+}

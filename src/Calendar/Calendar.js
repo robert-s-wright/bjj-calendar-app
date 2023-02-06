@@ -1,50 +1,59 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 
-import {
-  fetchEvents,
-  logoutUser,
-  fetchUsers,
-  fetchClub,
-} from "../requests/requests";
+import { fetchEvents, logoutUser, fetchUsers } from "../requests/requests";
 
 import CalendarModal from "../CalendarModal/CalendarModal";
 import ControlPanel from "../ControlPanel/ControlPanel";
+import MonthView from "./../CalendarViews/MonthView";
+import WeekView from "../CalendarViews/WeekView";
+import ListView from "../CalendarViews/ListView";
 
-import Card from "react-bootstrap/Card";
-import Button from "react-bootstrap/Button";
-import Badge from "react-bootstrap/Badge";
-import OverlayTrigger from "react-bootstrap/OverlayTrigger";
-import Popover from "react-bootstrap/Popover";
-import Tooltip from "react-bootstrap/Tooltip";
+import SettingsIcon from "@mui/icons-material/Settings";
 
-import { Typeahead } from "react-bootstrap-typeahead";
-import Select from "react-select";
+import {
+  Autocomplete,
+  TextField,
+  Button,
+  Card,
+  IconButton,
+} from "@mui/material";
 
-import { Star, GearFill } from "react-bootstrap-icons/";
+import { Transition } from "react-transition-group";
+
+import {
+  transitionStyles,
+  defaultStyle,
+  transitionDuration,
+} from "./../transitionStyles";
 
 import styles from "./Calendar.module.css";
+import CalendarMonthWeekToggleButtons from "../CalendarViews/CalendarMonthWeekToggleButtons";
 
-function Calendar(props) {
-  const { currentUser, clubList, setLoggedIn, setLoading, setCurrentUser } =
-    props;
+const Calendar = React.forwardRef((props, nodeRef) => {
+  const {
+    currentUser,
+    clubList,
+    setLoggedIn,
+    setLoggingIn,
+    setLoading,
+    setCurrentUser,
+    theme,
+    transitionStyle,
+  } = props;
 
   const today = new Date();
 
   const [selectedWeek, setSelectedWeek] = useState(today);
   const [monthView, setMonthView] = useState(true);
   const [listView, setListView] = useState(false);
-  const [daysOfActiveMonth, setDaysOfActiveMonth] = useState([]);
-  const [daysOfActiveWeek, setDaysOfActiveWeek] = useState([]);
   const [modalVisibility, setModalVisibility] = useState(false);
   const [selectedDate, setSelectedDate] = useState(today);
-  const [currentClub, setCurrentClub] = useState(
-    clubList.find((club) => club.value === currentUser.defaultClub)
-  );
+  const [currentClub, setCurrentClub] = useState({});
   const [events, setEvents] = useState([]);
   const [userList, setUserList] = useState([]);
-
   const [controlPanelOpen, setControlPanelOpen] = useState(false);
+
+  const viewRef = useRef(null);
 
   const months = [
     "January",
@@ -69,7 +78,6 @@ function Calendar(props) {
     "Thursday",
     "Friday",
     "Saturday",
-    "Sunday",
   ];
 
   //fetch events
@@ -93,82 +101,12 @@ function Calendar(props) {
     setCurrentClub(
       clubList.find((club) => club.value === currentUser.defaultClub)
     );
-  }, [currentUser]);
+  }, [clubList]);
 
   useEffect(() => {
     callUsers();
-
-    currentClub !== undefined && callEvents(currentClub.value);
+    callEvents(currentClub.value);
   }, [currentClub]);
-
-  //compile the active month calendar
-  function compileCalendar(month, year) {
-    let days = [];
-    const firstDayOfMonthWeekday = new Date(year, month, 1).getDay();
-    const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-
-    for (
-      let i = 1 - firstDayOfMonthWeekday;
-      i < 38 - firstDayOfMonthWeekday;
-      i++
-    ) {
-      const currentDay = new Date(year, month, i);
-      if (i <= 0 || i > lastDayOfMonth) {
-        days.push(undefined);
-      } else {
-        days.push(new Date(currentDay + i));
-      }
-    }
-    return days;
-  }
-
-  //compile days of the week
-  function compileDaysOfWeek(month, year, day) {
-    let days = [];
-
-    const dayNumberInWeek = new Date(year, month, day).getDay();
-
-    for (let i = 0; i < 7; i++) {
-      days.push(new Date(year, month, day - dayNumberInWeek + i));
-    }
-    return days;
-  }
-
-  // update active months and weeks upon change
-  useEffect(() => {
-    setDaysOfActiveMonth(
-      compileCalendar(selectedWeek.getMonth(), selectedWeek.getFullYear())
-    );
-  }, [selectedWeek]);
-
-  useEffect(() => {
-    setDaysOfActiveWeek(
-      compileDaysOfWeek(
-        selectedWeek.getMonth(),
-        selectedWeek.getFullYear(),
-        selectedWeek.getDate()
-      )
-    );
-  }, [selectedWeek]);
-
-  // useEffect(() => {
-  //   navigator.geolocation.getCurrentPosition((position) =>
-  //     console.log("Latitude is :", position.coords.latitude)
-  //   );
-  // });
-
-  //duration calculation
-  function durationCalculation(value) {
-    let hour = 0;
-    let minutes = value;
-
-    while (minutes >= 60) {
-      hour += 1;
-      minutes -= 60;
-    }
-
-    return `${hour}:${minutes === 0 ? "00" : minutes}`;
-  }
 
   //construct matching events
   function matchingEvents(day) {
@@ -183,371 +121,13 @@ function Calendar(props) {
   }
 
   //day is today function
-  function dayIsToday(day) {
+  const dayIsToday = (day) => {
     return (
       day.getDate() === today.getDate() &&
       day.getMonth() === today.getMonth() &&
       day.getFullYear() === today.getFullYear()
     );
-  }
-
-  //construct day header element
-  function dayHeader(day, matchingEvents) {
-    return (
-      <div className={styles.dayHeader}>
-        <Badge
-          pill
-          bg="dark"
-          className="mt-1 mx-1"
-        >
-          {day.getDate()}
-        </Badge>
-        {matchingEvents.some((element) => element.specialEvent === true) ? (
-          <OverlayTrigger
-            placement="top"
-            overlay={<Tooltip>Special Event/Seminar</Tooltip>}
-          >
-            <Star className="mt-1 mx-1" />
-          </OverlayTrigger>
-        ) : null}
-      </div>
-    );
-  }
-
-  //small event view on calendar
-  function smallEventView(event, date, index) {
-    return (
-      <OverlayTrigger
-        placement="auto"
-        key={index}
-        overlay={
-          <Popover>
-            <Popover.Header>
-              {`${date.getHours()}:${
-                date.getMinutes() < 10
-                  ? date.getMinutes() + "0"
-                  : date.getMinutes()
-              }`}
-              {event.openMat
-                ? " - Open Mat"
-                : event.specialEvent
-                ? " - Special Event/Seminar"
-                : " - Standard Training Session"}
-            </Popover.Header>
-            <Popover.Body>
-              <div>
-                <span className={styles.bold}>Agenda: </span>
-                {event.schema.length > 0
-                  ? event.schema.map((item) => item)
-                  : "No Agenda"}
-              </div>
-              <div>
-                <span className={styles.bold}>Duration: </span>
-                {durationCalculation(event.duration)}
-              </div>
-              <div>
-                <span className={styles.bold}>Drilling/Sparring: </span>
-                {`${100 - event.sparringTime}% / ${event.sparringTime}%`}
-              </div>
-              <div>
-                <span className={styles.bold}>Coaches: </span>
-                {event.coach.length > 0
-                  ? event.coach.map((item) => (
-                      <span key={item._id}>{item.label}</span>
-                    ))
-                  : "No Coaches Assigned"}
-              </div>
-              <div>
-                <span className={styles.bold}>Clothing: </span>
-                {event.clothing.join(", ")}
-              </div>
-              <div>
-                <span className={styles.bold}>Levels: </span>
-                {event.level.length === 3
-                  ? "All Levels"
-                  : event.level.join(", ")}
-              </div>
-              <div>
-                <span className={styles.bold}>Ages: </span>
-                {event.group.length === 3 ? "All ages" : event.group.join(", ")}
-              </div>
-              <div>
-                {event.notes !== "" ? (
-                  <>
-                    <span className={styles.bold}>Notes: </span>
-
-                    <span>{event.notes}</span>
-                  </>
-                ) : null}
-              </div>
-            </Popover.Body>
-          </Popover>
-        }
-      >
-        <Card
-          key={index}
-          bg={
-            event.clothing.length === 2
-              ? "success"
-              : event.clothing.includes("GI")
-              ? "gi"
-              : "noGi"
-          }
-          style={{
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-          }}
-          className={styles.smallEvent}
-        >
-          <span>
-            {`${date.getHours()}:${
-              date.getMinutes() < 10
-                ? date.getMinutes() + "0"
-                : date.getMinutes()
-            }`}{" "}
-            {event.openMat ? (
-              "Open Mat"
-            ) : (
-              <>
-                {event.level.length === 3
-                  ? "All Levels"
-                  : event.level
-                      .map((item) => item.substring(0, 3))
-                      .join(", ")}{" "}
-                {event.group.length === 3 ? "All Ages" : event.group.join(", ")}
-              </>
-            )}
-          </span>
-        </Card>
-      </OverlayTrigger>
-    );
-  }
-
-  //create month calendar view
-  const monthCalendarView = daysOfActiveMonth.map((day, index) => {
-    if (!day) {
-      return (
-        <div
-          className={styles.inactiveMonth}
-          key={index}
-        ></div>
-      );
-    } else {
-      return (
-        <Button
-          className={styles.activeBtn}
-          variant={dayIsToday(day) ? "primary" : "secondary"}
-          onClick={(e) => displayModal(e)}
-          value={day.toString()}
-          key={index}
-        >
-          {dayHeader(day, matchingEvents(day))}
-
-          {matchingEvents(day).length > 0 ? (
-            <div className={styles.eventsBadgeMonth}>
-              {matchingEvents(day).map((event, index) => {
-                const date = new Date(event.passTime);
-                if (index < 4) {
-                  return smallEventView(event, date, index);
-                }
-              })}
-              {matchingEvents(day).length > 4 ? (
-                <Card
-                  bg="dark"
-                  style={{
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                  }}
-                  className={styles.smallEvent}
-                >
-                  + {matchingEvents(day).length - 4} more
-                </Card>
-              ) : null}
-            </div>
-          ) : null}
-        </Button>
-      );
-    }
-  });
-
-  //create week calendar view
-  const weekCalendarView = daysOfActiveWeek.map((day, index) => {
-    const activeMonth =
-      day.getMonth() === selectedWeek.getMonth() &&
-      day.getFullYear() === selectedWeek.getFullYear();
-
-    return (
-      <Button
-        key={index}
-        className={` p-0 ${styles.activeBtn} ${
-          activeMonth ? "" : styles.inactiveMonth
-        }`}
-        variant={dayIsToday(day) ? "primary" : "secondary"}
-        onClick={(e) => displayModal(e)}
-        value={day.toString()}
-      >
-        {dayHeader(day, matchingEvents(day))}
-
-        {matchingEvents(day).length > 0 ? (
-          <div className={styles.eventsBadgeWeek}>
-            {matchingEvents(day).map((event, index) => {
-              const date = new Date(event.passTime);
-
-              return smallEventView(event, date, index);
-            })}
-          </div>
-        ) : null}
-      </Button>
-    );
-  });
-
-  //create list view
-  function listCalendarView() {
-    const upcomingEvents = events.filter(
-      (event) =>
-        new Date(event.passTime).getFullYear() >= today.getFullYear() &&
-        new Date(event.passTime).getMonth() >= today.getMonth() &&
-        new Date(event.passTime).getDate() >= today.getDate()
-    );
-
-    if (upcomingEvents.length > 0) {
-      return upcomingEvents.map((event, index) => {
-        const date = new Date(event.passTime);
-
-        return (
-          <Card key={event._id}>
-            <div className={styles.eventWrapper}>
-              <Card
-                key={event._id}
-                className={`m-1 ${styles.eventCard}`}
-              >
-                <Card.Header
-                  style={{
-                    backgroundColor: event.specialEvent ? "#ffc107" : "#144659",
-                    color: event.specialEvent ? "black" : "white",
-                  }}
-                  className={` ${styles.eventHeader}`}
-                >
-                  <h6 className="m-0">
-                    {event.specialEvent
-                      ? "Special Event/ Seminar"
-                      : "Standard Training Session"}
-                  </h6>
-                  <div>
-                    Added By:{" "}
-                    {userList.map((item) => {
-                      if (item._id === event.addedBy) {
-                        return item.firstName;
-                      }
-                    })}
-                  </div>
-                </Card.Header>
-                <Card.Body className={` p-1 `}>
-                  <div className={` p-0 ${styles.eventCardBody}`}>
-                    <div
-                      bg="light"
-                      className={styles.cardTime}
-                    >
-                      <h4>
-                        {months[date.getMonth()]} {date.getDate()}{" "}
-                        {date.getFullYear()}
-                      </h4>
-                      <h4 className="m-0">
-                        {date.getHours()}:
-                        {date.getMinutes() < 10
-                          ? date.getMinutes() + "0"
-                          : date.getMinutes()}
-                      </h4>
-                    </div>
-                    <Card
-                      bg="dark"
-                      className={`px-2 my-1 ${styles.cardField}`}
-                      text="white"
-                    >
-                      <div className={styles.cardFieldColumns}>
-                        <div>
-                          <div>
-                            <bold>Agenda: </bold>
-                            {event.schema.length > 0
-                              ? event.schema.map((item, index) => {
-                                  if (
-                                    event.schema.length === 1 ||
-                                    event.schema.length === index + 1
-                                  ) {
-                                    return item;
-                                  } else {
-                                    return item + " & ";
-                                  }
-                                })
-                              : "Agenda is empty"}
-                          </div>
-                          <div>
-                            <bold>Duration: </bold>
-                            {durationCalculation(event.duration)}
-                          </div>
-
-                          <div>
-                            <bold>Drilling/Sparring: </bold>
-                            {`${100 - event.sparringTime}/${
-                              event.sparringTime
-                            }`}
-                          </div>
-
-                          <div>
-                            <bold>Coach: </bold>
-                            {event.coach.length > 0
-                              ? event.coach.map((item, index) => {
-                                  if (
-                                    event.coach.length === 1 ||
-                                    event.coach.length === index + 1
-                                  ) {
-                                    return item.label;
-                                  } else {
-                                    return item.label + " & ";
-                                  }
-                                })
-                              : "No coach assigned"}
-                          </div>
-                        </div>
-                        <div>
-                          <div>
-                            <bold>Clothing: </bold>
-                            {event.clothing.join(" / ")}
-                          </div>
-                          <div>
-                            <bold>Levels: </bold>
-                            {event.level.length === 3
-                              ? "All Levels"
-                              : event.level.join(", ")}
-                          </div>
-
-                          <div>
-                            {" "}
-                            <bold>Groups: </bold>
-                            {event.group.length === 3
-                              ? "All ages"
-                              : event.group.join(", ")}
-                          </div>
-                        </div>
-                      </div>
-                      {event.notes.length > 0 ? (
-                        <div>
-                          <bold>Notes: </bold>
-                          {event.notes}
-                        </div>
-                      ) : null}
-                    </Card>
-                  </div>
-                </Card.Body>
-              </Card>
-            </div>
-          </Card>
-        );
-      });
-    } else {
-      return <h3>No upcoming events!</h3>;
-    }
-  }
+  };
 
   //log out
   async function logOut() {
@@ -569,25 +149,28 @@ function Calendar(props) {
     }
   }
 
-  function changeWeek(e) {
-    if (e.target.value === "next") {
-      setSelectedWeek(
-        new Date(
-          selectedWeek.getFullYear(),
-          selectedWeek.getMonth(),
-          selectedWeek.getDate() + 7
-        )
-      );
-    } else {
-      setSelectedWeek(
-        new Date(
-          selectedWeek.getFullYear(),
-          selectedWeek.getMonth(),
-          selectedWeek.getDate() - 7
-        )
-      );
-    }
-  }
+  const changeWeek = useCallback(
+    (e) => {
+      if (e.target.value === "next") {
+        setSelectedWeek(
+          new Date(
+            selectedWeek.getFullYear(),
+            selectedWeek.getMonth(),
+            selectedWeek.getDate() + 7
+          )
+        );
+      } else {
+        setSelectedWeek(
+          new Date(
+            selectedWeek.getFullYear(),
+            selectedWeek.getMonth(),
+            selectedWeek.getDate() - 7
+          )
+        );
+      }
+    },
+    [selectedWeek]
+  );
 
   //calculate week number
   const weekNumber =
@@ -598,204 +181,266 @@ function Calendar(props) {
     ) + 1;
 
   //show modal
-  function displayModal(e) {
+  const displayModal = (e) => {
     if (modalVisibility === false) {
-      setModalVisibility(true);
       setSelectedDate(new Date(e.currentTarget.value));
+      setModalVisibility(true);
     } else {
       setModalVisibility(false);
-      setTimeout(() => {
-        setSelectedDate(today);
-      }, 500);
+      setSelectedDate(today);
     }
-  }
+  };
+
+  const toggleControlPanel = () => {
+    setControlPanelOpen((state) => !state);
+  };
 
   return (
-    <div>
-      <Card className={`m-3 ${styles.wrapper}`}>
-        <div
-          className={`m-2 ${styles.header}`}
-          bg="secondary"
-        >
-          <div className={styles.userInfo}>
-            <Badge>{`${currentUser.firstName} ${currentUser.lastName}`}</Badge>
-            <br />
+    <Card
+      className={` ${styles.wrapper}`}
+      style={{ ...transitionStyle }}
+    >
+      <div
+        className={` ${styles.header}`}
+        bg="secondary"
+      >
+        <div className={styles.userInfo}>
+          <Card
+            sx={{
+              backgroundColor: theme.palette.primary.main,
+              color: "white",
+              padding: "0px 5px",
+            }}
+          >{`${currentUser.firstName} ${currentUser.lastName}`}</Card>
+          <br />
 
-            <div className={styles.legend}>
-              <div>
-                <Badge bg="gi"> GI </Badge>
-              </div>
-              <div>
-                <Badge bg="noGi">No GI</Badge>
-              </div>
-              <div>
-                <Badge bg="success">Both</Badge>
-              </div>
+          <div className={styles.legend}>
+            <div>
+              <Card
+                sx={{
+                  backgroundColor: theme.palette.gi.main,
+                  color: "white",
+                  padding: "0px 5px",
+                }}
+              >
+                GI
+              </Card>
             </div>
-          </div>
-          <div className={styles.title}>
-            <Select
-              id="currentClub"
-              isMulti={false}
-              defaultValue={[currentClub]}
-              options={clubList}
-              onChange={(e) => {
-                setCurrentClub(e);
-                // callEvents(e.value);
-              }}
-              className={styles.clubSelector}
-            ></Select>
-            {listView ? null : (
-              <>
-                <h3>
-                  {`${
-                    months[selectedWeek.getMonth()]
-                  } ${selectedWeek.getFullYear()}`}
-                </h3>
-                {!monthView ? <h5>Week Number: {weekNumber}</h5> : null}
-              </>
-            )}
-          </div>
-          <div>
-            <div className={styles.headerButtons}>
-              <h3>
-                <GearFill
-                  className={styles.preferences}
-                  onClick={() => setControlPanelOpen((state) => !state)}
-                />
-              </h3>
-              <Badge bg="secondary">
-                <div className={styles.toggleView}>
-                  <div>Calendar</div>
-                  <div className={styles.viewSlider}>
-                    <div
-                      className={`${styles.sliderButton}  ${
-                        listView ? styles.right : styles.left
-                      }`}
-                      onClick={() => setListView((state) => !state)}
-                    ></div>
-                  </div>
-                  <div>List</div>
-                </div>
-              </Badge>
-              <Button onClick={(e) => logOut()}>Log Out</Button>
+            <div>
+              <Card
+                bg="noGi"
+                sx={{
+                  backgroundColor: theme.palette.noGi.main,
+                  color: "white",
+                  padding: "0px 5px",
+                }}
+              >
+                <div>No GI</div>
+              </Card>
+            </div>
+            <div>
+              <Card
+                sx={{
+                  backgroundColor: theme.palette.success.main,
+                  color: "white",
+                  padding: "0px 5px",
+                }}
+              >
+                Both
+              </Card>
             </div>
           </div>
         </div>
-        {!listView ? (
-          <>
-            <div className={styles.weekdayHeading}>
-              <Badge>Sunday</Badge>
-              <Badge>Monday</Badge>
-              <Badge>Tuesday</Badge>
-              <Badge>Wednesday</Badge>
-              <Badge>Thursday</Badge>
-              <Badge>Friday</Badge>
-              <Badge>Saturday</Badge>
+        <div className={styles.title}>
+          {listView ? null : (
+            <div>
+              {`${
+                months[selectedWeek.getMonth()]
+              } ${selectedWeek.getFullYear()} ${
+                !monthView ? "Week " + weekNumber : ""
+              }`}
             </div>
-            {monthView ? (
-              <div className={styles.monthView}>{monthCalendarView}</div>
-            ) : (
-              <div className={styles.weekView}>{weekCalendarView}</div>
-            )}
-            {monthView ? (
-              <div className={styles.changeMonth}>
-                <Button
-                  className={styles.monthSelector}
-                  onClick={(e) => changeMonth(e)}
-                  variant="secondary"
-                  value="prev"
-                  style={{ color: "white" }}
-                >
-                  Previous Month
-                </Button>
-                <Button
-                  className={`m-2 ${styles.viewSelector} ${styles.toggle}`}
-                  onClick={() => setMonthView((state) => !state)}
-                  variant="primary"
-                  style={{ width: "fit-content" }}
-                >
-                  {monthView ? "Week" : "Month"} View
-                </Button>
-                <Button
-                  className={styles.monthSelector}
-                  onClick={(e) => changeMonth(e)}
-                  variant="secondary"
-                  value="next"
-                  style={{ color: "white" }}
-                >
-                  Next Month
-                </Button>
+          )}
+          {currentClub !== {} ? (
+            <Autocomplete
+              clearIcon={false}
+              id="currentClub"
+              value={currentClub}
+              options={clubList}
+              getOptionLabel={(option) =>
+                option.label !== undefined ? option.label : ""
+              }
+              isOptionEqualToValue={(option, value) =>
+                option.value === value.value || value.value === undefined
+              }
+              onChange={(e, value) => {
+                if (value !== null) {
+                  setCurrentClub(value);
+                } else {
+                  return;
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  margin="none"
+                />
+              )}
+            ></Autocomplete>
+          ) : null}
+        </div>
+        <div>
+          <div className={styles.headerButtons}>
+            <h3>
+              <IconButton onClick={() => toggleControlPanel()}>
+                <SettingsIcon />
+              </IconButton>
+            </h3>
+            <Card
+              sx={{
+                backgroundColor: theme.palette.secondary.main,
+                color: "white",
+                padding: "0px 5px",
+              }}
+            >
+              <div className={styles.toggleView}>
+                <div>Calendar</div>
+                <div className={styles.viewSlider}>
+                  <div
+                    className={`${styles.sliderButton}  ${
+                      listView ? styles.right : styles.left
+                    }`}
+                    onClick={() => setListView((state) => !state)}
+                  ></div>
+                </div>
+                <div>List</div>
               </div>
-            ) : (
-              <div className={styles.changeWeek}>
-                <Button
-                  className={styles.monthSelector}
-                  onClick={(e) => changeWeek(e)}
-                  variant="secondary"
-                  value="prev"
-                  style={{ color: "white" }}
-                >
-                  Previous Week
-                </Button>
-                <Button
-                  className={`m-2 ${styles.viewSelector} ${styles.toggle}`}
-                  onClick={() => setMonthView((state) => !state)}
-                  variant="primary"
-                  style={{ width: "fit-content" }}
-                >
-                  {monthView ? "Week" : "Month"} View
-                </Button>
-                <Button
-                  className={styles.monthSelector}
-                  onClick={(e) => changeWeek(e)}
-                  variant="secondary"
-                  value="next"
-                  style={{ color: "white" }}
-                >
-                  Next Week
-                </Button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div>{listCalendarView()}</div>
-        )}
-      </Card>
+            </Card>
+            <Button
+              variant="contained"
+              onClick={() => {
+                logOut();
+                setLoggingIn(true);
+              }}
+            >
+              Log Out
+            </Button>
+          </div>
+        </div>
+      </div>
+      {!listView ? (
+        <>
+          <div className={styles.weekdayHeading}>
+            {weekdays.map((day) => (
+              <Card
+                key={day}
+                sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  color: "white",
+                }}
+              >
+                {day}
+              </Card>
+            ))}
+          </div>
 
-      {modalVisibility ? (
-        <CalendarModal
-          props={{
-            modalVisibility,
-            selectedDate,
-            events,
-            displayModal,
-            weekdays,
-            months,
-            setEvents,
-            callEvents,
-            currentUser,
-            userList,
-            durationCalculation,
-            currentClub,
-          }}
-        />
-      ) : null}
-      {controlPanelOpen ? (
-        <ControlPanel
-          props={{
-            controlPanelOpen,
-            currentUser,
-            setControlPanelOpen,
-            userList,
-            setUserList,
-            clubList,
-            setCurrentUser,
-          }}
-        />
-      ) : null}
-    </div>
+          <div className={styles.viewContainer}>
+            <Transition
+              in={monthView}
+              timeout={transitionDuration}
+              nodeRef={viewRef}
+              mountOnEnter
+              unmountOnExit
+              // appear
+            >
+              {(state) => (
+                <MonthView
+                  selectedWeek={selectedWeek}
+                  dayIsToday={dayIsToday}
+                  displayModal={displayModal}
+                  matchingEvents={matchingEvents}
+                  monthView={monthView}
+                  viewRef={nodeRef}
+                  transitionStyle={{
+                    ...defaultStyle,
+                    ...transitionStyles[state],
+                  }}
+                />
+              )}
+            </Transition>
+
+            <Transition
+              in={!monthView}
+              timeout={transitionDuration}
+              nodeRef={viewRef}
+              mountOnEnter
+              unmountOnExit
+              // appear
+            >
+              {(state) => (
+                <WeekView
+                  dayIsToday={dayIsToday}
+                  displayModal={displayModal}
+                  matchingEvents={matchingEvents}
+                  selectedWeek={selectedWeek}
+                  monthView={monthView}
+                  viewRef={nodeRef}
+                  transitionStyle={{
+                    ...defaultStyle,
+                    ...transitionStyles[state],
+                  }}
+                />
+              )}
+            </Transition>
+          </div>
+
+          {/* )} */}
+          <CalendarMonthWeekToggleButtons
+            monthView={monthView}
+            changeMonth={changeMonth}
+            setMonthView={setMonthView}
+            changeWeek={changeWeek}
+          />
+        </>
+      ) : (
+        <div>
+          <ListView
+            userList={userList}
+            months={months}
+            events={events}
+            today={today}
+          />
+        </div>
+      )}
+      <CalendarModal
+        props={{
+          modalVisibility,
+          selectedDate,
+          events,
+          displayModal,
+          weekdays,
+          months,
+          setEvents,
+          callEvents,
+          currentUser,
+          userList,
+          currentClub,
+        }}
+      />
+      <ControlPanel
+        props={{
+          controlPanelOpen,
+          currentUser,
+          setControlPanelOpen,
+          userList,
+          setUserList,
+          clubList,
+          setCurrentUser,
+        }}
+      />
+    </Card>
   );
-}
+});
 
 export default Calendar;

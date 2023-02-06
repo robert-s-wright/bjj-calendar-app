@@ -1,0 +1,68 @@
+.clubCard {
+  width: 90%;
+  margin: auto;
+  padding: 10px 0px;
+  align-items: center;
+  justify-content: flex-start;
+  height: fit-content;
+}
+
+.header {
+  text-align: center;
+}
+
+.clubContainer {
+  margin: auto;
+}
+
+.clubContainer Form {
+  width: 100%;
+}
+
+.accordion {
+  margin: 10px 0px;
+}
+
+.accordionClubName {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+  padding: 8px 0px;
+  font-weight: 600;
+}
+
+.accordion Button {
+  font-size: calc(0.5rem + 0.7vw) !important;
+  padding: 5px;
+  margin: 5px 0px;
+}
+
+.accordionBody {
+  padding: 0px;
+}
+
+.cell {
+  transition: 0.5s all ease;
+  width: fit-content;
+  margin: auto;
+  /* border-radius: 50vw; */
+}
+
+.updated {
+  background-color: hsl(120, 100%, 90%) !important;
+}
+
+.checkBox input {
+  transition: 0.3s all ease;
+}
+
+.reject {
+  padding: 3px !important;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: 0px 10px;
+}
