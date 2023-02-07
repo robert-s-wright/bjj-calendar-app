@@ -38,3 +38,19 @@
 .smallEvent:hover {
   cursor: pointer;
 }
+
+.popover {
+  display: flex;
+  padding: 10px;
+  max-width: 90vw;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-evenly;
+  font-size: 0.8rem !important;
+}
+
+.bold {
+  font-weight: bold;
+  color: hsl(0, 0%, 70%);
+}

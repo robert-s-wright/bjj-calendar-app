@@ -76,7 +76,7 @@ function SmallEventView({ event, date, monthView }) {
           </>
         )}
       </Card>
-      <Popover
+      {/* <Popover
         id="mouse-over-popover"
         sx={{ pointerEvents: "none" }}
         disableRestoreFocus
@@ -157,7 +157,7 @@ function SmallEventView({ event, date, monthView }) {
             </div>
           </CardContent>
         </Card>
-      </Popover>
+      </Popover> */}
     </>
   );
 }

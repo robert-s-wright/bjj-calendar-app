@@ -90,10 +90,6 @@ function CalendarModal({ props }) {
     setData(result.data);
   };
 
-  useEffect(() => {
-    console.log(newEventObject);
-  }, [newEventObject]);
-
   //initial fetch
   useEffect(() => {
     callData();
@@ -346,6 +342,7 @@ function CalendarModal({ props }) {
                       handleHomeEndKeys
                       value={newEventObject.coach}
                       onChange={(e, value, reason, details) => {
+                        console.log(value);
                         setNewEventObject((state) => ({
                           ...state,
                           coach: value.map((item) => {
@@ -378,7 +375,7 @@ function CalendarModal({ props }) {
                         .map((user) => {
                           if (user.coach.includes(currentClub.value)) {
                             return {
-                              value: user._id,
+                              inputValue: `${user.firstName} ${user.lastName}`,
                               label: `${user.firstName} ${user.lastName}`,
                             };
                           }
@@ -427,11 +424,14 @@ function CalendarModal({ props }) {
                         label: item.name,
                       }))}
                       onChange={(e, value) => {
-                        console.log(value);
                         setNewEventObject((state) => ({
                           ...state,
                           schema: value.map((item) => {
-                            return item.inputValue;
+                            if (typeof item === "object") {
+                              return item.inputValue;
+                            } else {
+                              return item;
+                            }
                           }),
                         }));
                       }}
@@ -448,42 +448,6 @@ function CalendarModal({ props }) {
 
                   <div className={styles.radioNotesContainer}>
                     <FormGroup>
-                      <FormControlLabel
-                        sx={{
-                          ".MuiCheckbox-root": {
-                            padding: "5px 9px",
-                          },
-                        }}
-                        key={clothing.label}
-                        label={clothing.label}
-                        control={
-                          <Checkbox
-                            color="secondary"
-                            type="checkbox"
-                            name="clothing"
-                            checked={newEventObject.clothing.includes(
-                              clothing.value
-                            )}
-                            onChange={() => {
-                              if (
-                                newEventObject.clothing.includes(clothing.value)
-                              ) {
-                                setNewEventObject((state) => ({
-                                  ...state,
-                                  clothing: state.clothing.filter(
-                                    (value) => value !== clothing.value
-                                  ),
-                                }));
-                              } else {
-                                setNewEventObject((state) => ({
-                                  ...state,
-                                  clothing: [...state.clothing, clothing.value],
-                                }));
-                              }
-                            }}
-                          />
-                        }
-                      />
                       {clothing.map((clothing, index) => {
                         return (
                           <FormControlLabel

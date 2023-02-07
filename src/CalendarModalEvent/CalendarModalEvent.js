@@ -144,7 +144,9 @@ function CalendarModalEvent({
                   <div>
                     <span className={styles.bold}>Levels: </span>
                     {element.level.length === 3
-                      ? "All levels"
+                      ? "All Levels"
+                      : element.level.length === 0
+                      ? "No levels selected"
                       : element.level.join(", ")}
                   </div>
 
@@ -152,7 +154,9 @@ function CalendarModalEvent({
                     {" "}
                     <span className={styles.bold}>Groups: </span>
                     {element.group.length === 3
-                      ? "All Ages"
+                      ? "All ages"
+                      : element.group.length === 0
+                      ? "No ages selected"
                       : element.group.join(", ")}
                   </div>
                 </div>
