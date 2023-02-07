@@ -112,6 +112,7 @@ function App() {
               setLoading={setLoading}
               setCurrentUser={setCurrentUser}
               theme={theme}
+              nodeRef={nodeRef}
               transitionStyle={{ ...defaultStyle, ...transitionStyles[state] }}
             />
           )}

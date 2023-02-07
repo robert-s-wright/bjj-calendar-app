@@ -113,7 +113,7 @@ const MonthView = React.forwardRef(
             );
           } else {
             return (
-              <>
+              <React.Fragment key={day.toString()}>
                 <Button
                   className={styles.activeBtn}
                   aria-owns={open ? "mouse-over-popover" : undefined}
@@ -124,7 +124,7 @@ const MonthView = React.forwardRef(
                   color={dayIsToday(day) ? "primary" : "secondary"}
                   onClick={(e) => displayModal(e)}
                   value={day.toString()}
-                  key={day.toString()}
+                  // key={day.toString()}
                   id={day}
                   sx={{
                     height: extraWeekInMonth ? "109px" : "130px",
@@ -283,7 +283,7 @@ const MonthView = React.forwardRef(
                     </div>
                   </Popover>
                 ) : null}
-              </>
+              </React.Fragment>
             );
           }
         })}

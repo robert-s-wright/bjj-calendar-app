@@ -117,7 +117,7 @@ function Preferences({ currentUser, clubList }) {
                   <TableRow>
                     <TableCell
                       align="center"
-                      colspan="2"
+                      colSpan="2"
                     >
                       <h3>
                         Preferences
@@ -652,7 +652,7 @@ function Preferences({ currentUser, clubList }) {
                 <TableRow>
                   <TableCell
                     align="center"
-                    colspan="2"
+                    colSpan="2"
                   >
                     <h3>Roles / Access</h3>
                   </TableCell>

@@ -271,9 +271,13 @@ const Calendar = React.forwardRef((props, nodeRef) => {
               getOptionLabel={(option) =>
                 option.label !== undefined ? option.label : ""
               }
-              isOptionEqualToValue={(option, value) =>
-                option.value === value.value || value.value === undefined
-              }
+              isOptionEqualToValue={(option, value) => {
+                // console.log(option, value);
+                return (
+                  option.value === value.value ||
+                  Object.keys(value).length === 0
+                );
+              }}
               onChange={(e, value) => {
                 if (value !== null) {
                   setCurrentClub(value);

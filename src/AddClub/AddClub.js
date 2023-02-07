@@ -112,7 +112,7 @@ function AddClub(props, nodeRef) {
           id="clubname"
           label="Club Name"
           required={true}
-          value={newClub.clubName}
+          value={newClub.clubName !== null ? newClub.clubName : ""}
           onChange={(e) => {
             setNewClub((state) => ({
               ...state,
@@ -188,7 +188,7 @@ function AddClub(props, nodeRef) {
           id="address"
           label="Address"
           required={true}
-          value={newClub.address}
+          value={newClub.address !== null ? newClub.address : ""}
           onChange={(e) => {
             setNewClub((state) => ({
               ...state,
@@ -213,7 +213,7 @@ function AddClub(props, nodeRef) {
           id="city"
           label="City"
           required={true}
-          value={newClub.city}
+          value={newClub.city !== null ? newClub.city : ""}
           onChange={(e) => {
             setNewClub((state) => ({
               ...state,
@@ -236,7 +236,7 @@ function AddClub(props, nodeRef) {
           id="zip"
           label="Zip Code"
           required={true}
-          value={newClub.zip}
+          value={newClub.zip !== null ? newClub.zip : ""}
           onChange={(e) => {
             setNewClub((state) => ({
               ...state,
@@ -257,9 +257,9 @@ function AddClub(props, nodeRef) {
         <Autocomplete
           id="country-selection"
           className={styles.input}
-          value={newClub.country}
+          value={newClub.country !== null ? newClub.country : ""}
           isOptionEqualToValue={(option, value) =>
-            option.value === value || value === null
+            option.value === value || value === ""
           }
           options={countries}
           onChange={(e, value) => {
@@ -295,7 +295,7 @@ function AddClub(props, nodeRef) {
           id="contact"
           label="Contact Name"
           required={true}
-          value={newClub.contact}
+          value={newClub.contact !== null ? newClub.contact : ""}
           onChange={(e) => {
             setNewClub((state) => ({
               ...state,
@@ -320,7 +320,7 @@ function AddClub(props, nodeRef) {
           id="email"
           label="E-Mail"
           required={true}
-          value={newClub.email}
+          value={newClub.email !== null ? newClub.email : ""}
           onChange={(e) => {
             setNewClub((state) => ({
               ...state,
@@ -345,7 +345,7 @@ function AddClub(props, nodeRef) {
           id="phone"
           label="Phone Number"
           required={true}
-          value={newClub.phone}
+          value={newClub.phone !== null ? newClub.phone : ""}
           onChange={(e) => {
             setNewClub((state) => ({
               ...state,
@@ -369,7 +369,7 @@ function AddClub(props, nodeRef) {
           type="website"
           id="website"
           label="Your Club's Website"
-          value={newClub.website}
+          value={newClub.website !== null ? newClub.website : ""}
           onChange={(e) => {
             setNewClub((state) => ({
               ...state,

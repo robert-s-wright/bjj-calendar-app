@@ -82,9 +82,8 @@ const WeekView = React.forwardRef(
             day.getFullYear() === selectedWeek.getFullYear();
 
           return (
-            <>
+            <React.Fragment key={day.toString()}>
               <Button
-                key={index}
                 className={` p-0 ${styles.activeBtn} ${
                   activeMonth ? "" : styles.inactiveMonth
                 }`}
@@ -242,7 +241,7 @@ const WeekView = React.forwardRef(
                   </div>
                 </Popover>
               ) : null}
-            </>
+            </React.Fragment>
           );
         })}
       </div>
