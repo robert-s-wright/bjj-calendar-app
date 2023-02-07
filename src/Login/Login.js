@@ -1,11 +1,11 @@
 import React from "react";
-import { useState, forwardRef } from "react";
+import { useState } from "react";
 
 import styles from "./Login.module.css";
 
 import { loginUser } from "../requests/requests";
 
-import { TextField, Button, Card, Alert, Fade } from "@mui/material";
+import { TextField, Button, Card, Alert } from "@mui/material";
 
 const Login = React.forwardRef((props, nodeRef) => {
   const {
@@ -59,7 +59,7 @@ const Login = React.forwardRef((props, nodeRef) => {
       style={{ ...transitionStyle }}
     >
       <Card className={styles.header}>
-        <h3>BJJ Calendar Login</h3>
+        <h2>Calendar Login</h2>
       </Card>
       <Card className={styles.loginCard}>
         {

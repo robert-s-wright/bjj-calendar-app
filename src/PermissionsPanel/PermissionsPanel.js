@@ -6,8 +6,6 @@ import {
   fetchAllUsers,
 } from "../requests/requests";
 
-// import Badge from "react-bootstrap/esm/Badge";
-
 import {
   Accordion,
   AccordionSummary,
@@ -38,19 +36,6 @@ function PermissionsPanel({ clubList, currentUser, setCurrentUser }) {
       setUserPermissions(result.data.map((item) => ({ ...item, updates: [] })));
     });
   }, []);
-
-  useEffect(() => {
-    console.log(
-      userPermissions
-        .filter((user) => user.updates.length > 0)
-        .filter(
-          (user) =>
-            user.updates.filter((object) =>
-              Object.values(object).includes("63a5ab91d0fa8fc87fe26f8e" && true)
-            ).length > 0
-        )
-    );
-  }, [userPermissions]);
 
   //update permissions handler
   const handleUpdatePermissions = (userId, clubId, permission) => {
@@ -138,9 +123,7 @@ function PermissionsPanel({ clubList, currentUser, setCurrentUser }) {
   }
   return (
     <div className={styles.clubCard}>
-      <div className={styles.header}>
-        <h4>Clubs you manage</h4>
-      </div>
+      <div className={styles.header}>Clubs you manage</div>
 
       {clubList.length === 0
         ? null

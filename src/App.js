@@ -2,7 +2,7 @@ import "./App.css";
 import React from "react";
 import { useState, useEffect, useCallback, useRef } from "react";
 
-import { Transition, TransitionGroup } from "react-transition-group";
+import { Transition } from "react-transition-group";
 
 import { theme } from "./theme";
 

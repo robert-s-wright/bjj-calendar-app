@@ -8,6 +8,7 @@
   position: absolute;
   color: white !important;
   bottom: 0;
+  background-color: hsl(34, 10%, 95%);
 }
 
 .toggle {

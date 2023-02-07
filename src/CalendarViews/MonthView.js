@@ -128,7 +128,7 @@ const MonthView = React.forwardRef(
                   id={day}
                   sx={{
                     height: extraWeekInMonth ? "109px" : "130px",
-                    transition: "height 200ms linear",
+                    transition: "height 150ms ease-in-out",
                   }}
                 >
                   <DayHeader
@@ -187,14 +187,7 @@ const MonthView = React.forwardRef(
                       {matchingEvents(day).map((event) => {
                         const date = new Date(day);
                         return (
-                          <Card
-                            key={event._id}
-                            sx={
-                              {
-                                // width: "250px",
-                              }
-                            }
-                          >
+                          <Card key={event._id}>
                             <CardHeader
                               className={styles.popoverHeader}
                               subheader={

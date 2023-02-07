@@ -75,7 +75,7 @@ const Registration = React.forwardRef((props, nodeRef) => {
       style={{ ...transitionStyle }}
     >
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <h3 className={styles.header}>User Sign Up</h3>
+        <h2 className={styles.header}>User Sign Up</h2>
 
         {
           {

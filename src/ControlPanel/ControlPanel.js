@@ -3,9 +3,9 @@ import React from "react";
 import Preferences from "../Preferences/Preferences";
 import PermissionsPanel from "../PermissionsPanel/PermissionsPanel";
 
-import Modal from "react-bootstrap/Modal";
+// import Modal from "react-bootstrap/Modal";
 
-import { Card, IconButton } from "@mui/material";
+import { Card, IconButton, Modal } from "@mui/material";
 
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -21,7 +21,18 @@ function ControlPanel({ props }) {
   } = props;
 
   return (
-    <Modal show={controlPanelOpen}>
+    <Modal
+      open={controlPanelOpen}
+      sx={{
+        "&.MuiModal-root": {
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "center",
+          overflowY: "auto",
+          padding: "30px 0px",
+        },
+      }}
+    >
       <Card className={styles.modalContainer}>
         <div className={styles.buttons}>
           <IconButton

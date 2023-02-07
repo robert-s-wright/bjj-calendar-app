@@ -16,6 +16,8 @@ import {
   Button,
   Card,
   IconButton,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 
 import { Transition } from "react-transition-group";
@@ -212,7 +214,6 @@ const Calendar = React.forwardRef((props, nodeRef) => {
               padding: "0px 5px",
             }}
           >{`${currentUser.firstName} ${currentUser.lastName}`}</Card>
-          <br />
 
           <div className={styles.legend}>
             <div>
@@ -292,46 +293,53 @@ const Calendar = React.forwardRef((props, nodeRef) => {
         </div>
         <div>
           <div className={styles.headerButtons}>
-            <h3>
+            <div>
+              <FormControlLabel
+                label="List View"
+                control={
+                  <Switch
+                    checked={listView}
+                    onChange={(e, checked) => setListView(checked)}
+                    color="default"
+                  />
+                }
+              />
+
               <IconButton onClick={() => toggleControlPanel()}>
                 <SettingsIcon />
               </IconButton>
-            </h3>
-            <Card
-              sx={{
-                backgroundColor: theme.palette.secondary.main,
-                color: "white",
-                padding: "0px 5px",
-              }}
-            >
-              <div className={styles.toggleView}>
-                <div>Calendar</div>
-                <div className={styles.viewSlider}>
-                  <div
-                    className={`${styles.sliderButton}  ${
-                      listView ? styles.right : styles.left
-                    }`}
-                    onClick={() => setListView((state) => !state)}
-                  ></div>
-                </div>
-                <div>List</div>
-              </div>
-            </Card>
+            </div>
+
             <Button
               variant="contained"
               onClick={() => {
                 logOut();
                 setLoggingIn(true);
               }}
+              sx={{ height: "fit-content" }}
             >
               Log Out
             </Button>
           </div>
         </div>
       </div>
-      {!listView ? (
-        <>
-          <div className={styles.weekdayHeading}>
+
+      <Transition
+        in={!listView}
+        timeout={transitionDuration}
+        nodeRef={viewRef}
+        mountOnEnter
+        unmountOnExit
+      >
+        {(state) => (
+          <div
+            className={styles.weekdayHeading}
+            ref={nodeRef}
+            style={{
+              ...defaultStyle,
+              ...transitionStyles[state],
+            }}
+          >
             {weekdays.map((day) => (
               <Card
                 key={day}
@@ -344,75 +352,102 @@ const Calendar = React.forwardRef((props, nodeRef) => {
               </Card>
             ))}
           </div>
+        )}
+      </Transition>
 
-          <div className={styles.viewContainer}>
-            <Transition
-              in={monthView}
-              timeout={transitionDuration}
-              nodeRef={viewRef}
-              mountOnEnter
-              unmountOnExit
-              // appear
-            >
-              {(state) => (
-                <MonthView
-                  selectedWeek={selectedWeek}
-                  dayIsToday={dayIsToday}
-                  displayModal={displayModal}
-                  matchingEvents={matchingEvents}
-                  monthView={monthView}
-                  viewRef={nodeRef}
-                  transitionStyle={{
-                    ...defaultStyle,
-                    ...transitionStyles[state],
-                  }}
-                />
-              )}
-            </Transition>
+      <div className={styles.viewContainer}>
+        <Transition
+          in={monthView && !listView}
+          timeout={transitionDuration}
+          nodeRef={viewRef}
+          mountOnEnter
+          unmountOnExit
+          // appear
+        >
+          {(state) => (
+            <MonthView
+              selectedWeek={selectedWeek}
+              dayIsToday={dayIsToday}
+              displayModal={displayModal}
+              matchingEvents={matchingEvents}
+              monthView={monthView}
+              viewRef={nodeRef}
+              transitionStyle={{
+                ...defaultStyle,
+                ...transitionStyles[state],
+              }}
+            />
+          )}
+        </Transition>
 
-            <Transition
-              in={!monthView}
-              timeout={transitionDuration}
-              nodeRef={viewRef}
-              mountOnEnter
-              unmountOnExit
-              // appear
-            >
-              {(state) => (
-                <WeekView
-                  dayIsToday={dayIsToday}
-                  displayModal={displayModal}
-                  matchingEvents={matchingEvents}
-                  selectedWeek={selectedWeek}
-                  monthView={monthView}
-                  viewRef={nodeRef}
-                  transitionStyle={{
-                    ...defaultStyle,
-                    ...transitionStyles[state],
-                  }}
-                />
-              )}
-            </Transition>
-          </div>
+        <Transition
+          in={!monthView && !listView}
+          timeout={transitionDuration}
+          nodeRef={viewRef}
+          mountOnEnter
+          unmountOnExit
+          // appear
+        >
+          {(state) => (
+            <WeekView
+              dayIsToday={dayIsToday}
+              displayModal={displayModal}
+              matchingEvents={matchingEvents}
+              selectedWeek={selectedWeek}
+              monthView={monthView}
+              viewRef={nodeRef}
+              transitionStyle={{
+                ...defaultStyle,
+                ...transitionStyles[state],
+              }}
+            />
+          )}
+        </Transition>
+        <Transition
+          in={listView}
+          timeout={transitionDuration}
+          nodeRef={viewRef}
+          mountOnEnter
+          unmountOnExit
+        >
+          {(state) => (
+            <ListView
+              userList={userList}
+              months={months}
+              events={events}
+              today={today}
+              viewRef={nodeRef}
+              transitionStyle={{
+                ...defaultStyle,
+                ...transitionStyles[state],
+              }}
+            />
+          )}
+        </Transition>
+      </div>
 
-          {/* )} */}
+      <Transition
+        in={!listView}
+        timeout={transitionDuration}
+        nodeRef={viewRef}
+        mountOnEnter
+        unmountOnExit
+      >
+        {(state) => (
           <CalendarMonthWeekToggleButtons
             monthView={monthView}
             changeMonth={changeMonth}
             setMonthView={setMonthView}
             changeWeek={changeWeek}
+            viewRef={nodeRef}
+            transitionStyle={{
+              ...defaultStyle,
+              ...transitionStyles[state],
+            }}
           />
-        </>
-      ) : (
-        <div>
-          <ListView
-            userList={userList}
-            months={months}
-            events={events}
-            today={today}
-          />
-        </div>
-      )}
+        )}
+      </Transition>
+
       <CalendarModal
         props={{
           modalVisibility,

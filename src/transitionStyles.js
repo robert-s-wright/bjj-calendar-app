@@ -1,8 +1,8 @@
-const transitionDuration = 300;
+const transitionDuration = 150;
 
 const defaultStyle = {
   transition: `opacity ${transitionDuration}ms linear ${
-    transitionDuration / 10
+    transitionDuration * 1.5
   }ms`,
   // transitionDelay: ``,
   opacity: 0,

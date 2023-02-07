@@ -92,7 +92,7 @@ function AddClub(props, nodeRef) {
       className={styles.card}
       style={{ ...transitionStyle }}
     >
-      <h3 className={styles.header}>Begin Using This Software In Your Club!</h3>
+      <h2 className={styles.header}>Begin Using This Software In Your Club!</h2>
       {
         {
           true: <Alert severity="success">Club registered successfully.</Alert>,

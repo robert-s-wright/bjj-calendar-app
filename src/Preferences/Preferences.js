@@ -91,7 +91,7 @@ function Preferences({ currentUser, clubList }) {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div className={styles.wrapper}>
         <div className={styles.header}>
-          <h4>Welcome {currentUser.firstName}</h4>
+          Welcome {currentUser.firstName}
           {editingAlert === true ? (
             <Alert variant="success">Updated preferences successfully</Alert>
           ) : editingAlert === false ? (
@@ -119,18 +119,14 @@ function Preferences({ currentUser, clubList }) {
                       align="center"
                       colspan="2"
                     >
-                      <h5>
-                        Preferences {/* {editingPrefs ? null : ( */}
+                      <h3>
+                        Preferences
                         <Grow in={!editingPrefs}>
-                          <IconButton
-                            onClick={() => setEditingPrefs(true)}
-                            // className={styles.editPrefs}
-                          >
+                          <IconButton onClick={() => setEditingPrefs(true)}>
                             <EditIcon />
                           </IconButton>
                         </Grow>
-                        {/* )} */}
-                      </h5>
+                      </h3>
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -143,7 +139,6 @@ function Preferences({ currentUser, clubList }) {
                       First Name
                     </TableCell>
                     <TableCell align="center">
-                      {/* {editingPrefs ? ( */}
                       <Collapse in={editingPrefs}>
                         <TextField
                           className={styles.input}
@@ -186,11 +181,10 @@ function Preferences({ currentUser, clubList }) {
                           }
                         />
                       </Collapse>
-                      {/* ) : ( */}
+
                       <Collapse in={!editingPrefs}>
                         <div>{currentUser.firstName}</div>
                       </Collapse>
-                      {/* )} */}
                     </TableCell>
                   </TableRow>
                   <TableRow>
@@ -201,7 +195,6 @@ function Preferences({ currentUser, clubList }) {
                       Last Name
                     </TableCell>
                     <TableCell align="center">
-                      {/* {editingPrefs ? ( */}
                       <Collapse in={editingPrefs}>
                         <TextField
                           className={styles.input}
@@ -244,11 +237,10 @@ function Preferences({ currentUser, clubList }) {
                           }}
                         />
                       </Collapse>
-                      {/* // ) : ( */}
+
                       <Collapse in={!editingPrefs}>
                         <div>{currentUser.lastName}</div>
                       </Collapse>
-                      {/* // )} */}
                     </TableCell>
                   </TableRow>
                   <TableRow>
@@ -662,7 +654,7 @@ function Preferences({ currentUser, clubList }) {
                     align="center"
                     colspan="2"
                   >
-                    <h5>Roles / Access</h5>
+                    <h3>Roles / Access</h3>
                   </TableCell>
                 </TableRow>
               </TableHead>

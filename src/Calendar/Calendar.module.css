@@ -1,9 +1,6 @@
 .wrapper {
   background-color: hsl(34, 10%, 95%) !important;
   box-shadow: 1px 1px 1px gray;
-  /* display: grid; */
-  /* grid-template-columns: 1;
-  grid-template-rows: repeat(4, auto-fit); */
   width: 95vw;
   height: 900px;
   position: relative;
@@ -45,15 +42,6 @@
   width: 100%;
   column-gap: 1px;
   justify-self: start;
-}
-
-.activeBtn {
-  display: flex !important;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 0 !important;
-  overflow-y: hidden;
 }
 
 .modalWrapper {
@@ -126,8 +114,17 @@
 
 .headerButtons {
   display: flex;
+  align-items: center;
   height: 70%;
   gap: 5px;
+}
+
+.headerButtons div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: fit-content;
 }
 
 .toggleView {
@@ -177,8 +174,11 @@
 }
 
 .userInfo {
+  display: flex;
+  flex-direction: column;
   text-align: center;
   left: 5px;
+  gap: 10px;
 }
 
 .eventCardBody {
@@ -209,4 +209,7 @@
 
 .viewContainer {
   margin-bottom: 60px;
+  width: 100%;
+  margin: auto;
+  position: relative;
 }

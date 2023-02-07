@@ -1,0 +1,48 @@
+.container {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-evenly;
+  gap: 10px;
+}
+
+.eventContainer {
+  flex-basis: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.eventHeader,
+.cardTime {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 5px;
+  padding: 10px 5px;
+}
+.eventHeader h3 {
+  margin: 0;
+}
+
+.cardTime {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  padding: 5px 5px;
+}
+
+.cardTime h4 {
+  margin: 0;
+}
+
+.cardFieldColumns {
+  padding: 10px;
+  text-align: left;
+}
+
+.bold {
+  font-weight: 700;
+}
